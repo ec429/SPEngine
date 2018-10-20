@@ -4,11 +4,9 @@
 import math
 
 class TechLevel(object):
-    def __init__(self, tech, maxThrust, isp, vac, maxIgnitions, mass, cost, burnTime, minThrust=None):
+    def __init__(self, tech, maxThrust, isp, vac, maxIgnitions, mass, cost, burnTime, minThrust):
         self.tech = tech
         self.maxThrust = float(maxThrust)
-        if minThrust is None:
-            minThrust = maxThrust / 4.0
         self.minThrust = float(minThrust)
         self.isp = isp
         self.vac = vac
@@ -17,14 +15,15 @@ class TechLevel(object):
         self.cost = cost # ditto
         self.burnTime = burnTime
 class EngineClass(object):
-    def __init__(self, letter, propellants, **flags):
+    def __init__(self, letter, propellants, minTf, **flags):
         self.letter = letter
         self.propellants = propellants
         self.tls = {}
+        self.minTf = minTf
         self.flags = flags
-    def setTL(self, tl, tech, maxThrust, isp, vac, maxIgnitions, mass, cost, burnTime, minThrust=None):
+    def setTL(self, tl, tech, maxThrust, isp, vac, maxIgnitions, mass, cost, burnTime):
         assert tl not in self.tls, tl
-        self.tls[tl] = TechLevel(tech, maxThrust, isp, vac, maxIgnitions, mass, cost, burnTime, minThrust)
+        self.tls[tl] = TechLevel(tech, maxThrust, isp, vac, maxIgnitions, mass, cost, burnTime, maxThrust * self.minTf)
     def calc(self, tl, thrust, ignitions):
         assert tl in self.tls, self.tls.keys()
         TL = self.tls[tl]
@@ -47,7 +46,7 @@ class EngineClass(object):
         tothrust = toTL.maxThrust * tf
         return tothrust, self.calc(totl, tothrust, toTL.maxIgnitions - ni)
 
-Aggregat = EngineClass('A', {'Ethanol75': 0.5125, 'LqdOxygen': 0.4875}) # let's not faff about with HTP
+Aggregat = EngineClass('A', {'Ethanol75': 0.5125, 'LqdOxygen': 0.4875}, 0.25) # let's not faff about with HTP
 Aggregat.setTL(0, 'unlockParts', 400, 203, 239, 0, 1.14, 200, 70)
 Aggregat.setTL(1, 'rocketryTesting', 360, 220, 255, 0, 1.12, 900, 115) # really should be Hydyne/LOx, but who cares
 Aggregat.setTL(2, 'basicRocketryRP0', 500, 216, 249, 0, 0.8, 540, 145) # NAA-75-110
@@ -61,7 +60,7 @@ for i in xrange(4):
     print Aggregat.upgrade(0, i, 100, 0)
 print
 
-Bee = EngineClass('B', {'Aniline': 0.326832, 'Furfuryl': 0.081708, 'IRFNA-III': 0.59146}, nogimbal=True) # strictly the propellants should vary per TL, who cares
+Bee = EngineClass('B', {'Aniline': 0.326832, 'Furfuryl': 0.081708, 'IRFNA-III': 0.59146}, 0.25, nogimbal=True) # strictly the propellants should vary per TL, who cares
 Bee.setTL(0, 'unlockParts', 10, 191, 218.36, 1, 0.01, 42, 50)
 Bee.setTL(1, 'rocketryTesting', 18, 200, 235.44, 1, 0.013, 54, 65)
 Bee.setTL(2, 'basicRocketryRP0', 28, 198, 231, 1, 0.015, 63, 70)
@@ -73,7 +72,7 @@ for i in xrange(3):
     print Bee.upgrade(0, i, 2.5, 0)
 print
 
-Delta = EngineClass('D', {'UDMH': 0.4281, 'IRFNA-III': 0.5719}) # again, the propellants should vary per TL but who cares
+Delta = EngineClass('D', {'UDMH': 0.4281, 'IRFNA-III': 0.5719}, 0.25) # again, the propellants should vary per TL but who cares
 Delta.setTL(0, 'orbitalRocketry1956', 42, 240, 271, 1, 0.1, 200, 115)
 Delta.setTL(1, 'orbitalRocketry1958', 44, 238, 267, 1, 0.101, 190, 150)
 Delta.setTL(2, 'orbitalRocketry1959', 46, 240, 270, 1, 0.1032, 220, 150)
@@ -95,7 +94,7 @@ for i in xrange(8):
     print Delta.upgrade(0, i, 10.5, 1)
 print
 
-Kerolox = EngineClass('K', {'Kerosene': 0.3929, 'LqdOxygen': 0.6071})
+Kerolox = EngineClass('K', {'Kerosene': 0.3929, 'LqdOxygen': 0.6071}, 0.2)
 Kerolox.setTL(0, 'orbitalRocketry1956', 800, 246, 280, 0, 1.14, 424, 165)
 Kerolox.setTL(1, 'orbitalRocketry1958', 1000, 248, 282, 0, 1.132, 420, 165)
 Kerolox.setTL(2, 'orbitalRocketry1959', 1024, 245, 284, 0, 1.168, 462, 165)
