@@ -76,7 +76,6 @@ namespace SPEngine
 				return;
 			cacheDesign = design;
 			Logging.LogFormat("Applying design '{2}': thrust {0}, scale {1}", design.thrust, design.scaleFactor, design.name);
-			/* This does not actually work.  Sad! */
 			engine.maxThrust = design.thrust;
 			engine.minThrust = engine.maxThrust; // Assume no throttling for now.  Later it'll go in the Family
 			engine.atmosphereCurve = design.isp;
@@ -93,6 +92,12 @@ namespace SPEngine
 		{
 			initialScale = part.scaleFactor;
 			engine = part.FindModuleImplementing<ModuleEngines>();
+			applyConfig();
+		}
+
+		public override void OnStart(StartState state)
+		{
+			base.OnStart(state);
 			applyConfig();
 		}
 
