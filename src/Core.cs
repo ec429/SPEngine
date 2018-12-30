@@ -14,6 +14,7 @@ namespace SPEngine
 		private ApplicationLauncherButton button;
 		private UI.MasterWindow masterWindow;
 		public DesignLibrary library;
+		public Dictionary<char, Family> families;
 
 		public void Start()
 		{
@@ -27,7 +28,17 @@ namespace SPEngine
 			if (ScenarioSPEngine.Instance != null)
 				Load(ScenarioSPEngine.Instance.node);
 			masterWindow = new UI.MasterWindow(library);
+			families = new Dictionary<char, Family>();
+			foreach (ConfigNode cn in GameDatabase.Instance.GetConfigNodes("SPEFamily")) {
+				Family f = new Family(cn);
+				families.Add(f.letter, f);
+			}
 			Logging.Log("Core loaded successfully.");
+		}
+
+		public void EditPart(ModuleSPEngine m)
+		{
+			/* TODO open it in the GUI */
 		}
 
 		protected void Awake()
