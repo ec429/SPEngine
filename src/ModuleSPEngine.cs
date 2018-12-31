@@ -27,7 +27,6 @@ namespace SPEngine
 			get {
 				if (cacheDesign != null)
 					return cacheDesign;
-				Logging.LogFormat("get design: {0} fL {1} DN {2}", Core.Instance == null ? "no core" : "core", familyLetter, DesignName);
 				if (Core.Instance == null)
 					return null;
 				if (!Core.Instance.library.designs.ContainsKey(DesignName)) {
@@ -39,8 +38,7 @@ namespace SPEngine
 						return null;
 					}
 					Family f = Core.Instance.families[familyLetter[0]];
-					Logging.LogFormat("Family {0}found", f == null ? "not " : "");
-					return f == null ? null : f.baseDesign;
+					return f.baseDesign;
 				}
 				return Core.Instance.library.designs[DesignName];
 			}
