@@ -11,6 +11,7 @@ namespace SPEngine.UI
 		string inputThrust, inputIgnitions, inputName;
 		int inputTL = 1;
 		Design currentDesign;
+		string confirmTool = null;
 		public ConfigWindow(ModuleSPEngine m) :
 			base(new Guid("41f4fc6f-06b4-4d6c-9774-908f46beffc0"),
 			     "SPEngine Config", new Rect(100, 100, 615, 320))
@@ -30,7 +31,7 @@ namespace SPEngine.UI
 			if (module.design != null) {
 				inputThrust = module.design.thrust.ToString();
 				inputIgnitions = module.design.ignitions.ToString();
-				inputTL = module.design.tl;
+				inputTL = module.design.tl + 1;
 			}
 		}
 
@@ -45,22 +46,60 @@ namespace SPEngine.UI
 							module.applyConfig();
 							fetchDesign();
 						}
-						GUILayout.Label(String.Format(": {0}kN, {1} ignitions; TL {4}.  Mass {2}, cost {3}.", d.thrust, d.ignitions, d.mass, d.cost, d.tl + 1));
+						GUILayout.Label(String.Format(": {0:0.##}kN, {1} ignitions; TL {4}.  Mass {2:0.###}, cost {3:0.#}.", d.thrust, d.ignitions, d.mass, d.cost, d.tl + 1));
 						if (!d.tooled) {
-							if (GUILayout.Button("TOOL")) {
-								/* TODO entry costs.  And a confirmation window. */
-								d.tooled = true;
+							if (confirmTool == d.name) {
+								GUILayout.Label("Tool:");
+								if (GUILayout.Button("OK"))
+									d.Tool();
+								else if (GUILayout.Button("CANCEL"))
+									confirmTool = null;
+							} else {
+								if (GUILayout.Button("TOOL"))
+									confirmTool = d.name;
+							}
+							GUILayout.Label(String.Format("{0:0.#}f", d.toolCost));
+						}
+						if (d.tl + 1 < d.family.techLevels.Count) {
+							if (d.upgradeTo != null) {
+								GUILayout.Label(String.Format("Upgraded: {0}", d.upgradeTo));
+							} else if (!d.family.haveTechRequired(d.tl + 1)) {
+								GUILayout.Label(String.Format("Upgrade: requires {0}", d.family.getTechRequired(d.tl + 1)));
+							} else if (d.tl + 1 >= d.family.unlocked) {
+								GUILayout.Label(String.Format("Upgrade: unlock TL {0}", d.tl + 2));
+							} else if (Core.Instance.library.designs.ContainsKey(currentDesign.name)) {
+								GUILayout.Label("Upgrade: Name in use");
+							} else if (currentDesign.name.Equals("")) {
+								GUILayout.Label("Upgrade: Choose name");
+							} else {
+								if (GUILayout.Button("Upgrade")) {
+									Design up = new Design(d, d.tl + 1);
+									Design updup = up.checkDuplicate();
+									if (updup != null) {
+										/* Link the existing upgrade to this design.
+										 * It shouldn't be possible for updup to already have an upgradeFrom,
+										 * because otherwise we'd be a duplicate of that so how did we get
+										 * created in the first place?  But check anyway, and don't overwrite
+										 * an existing upgradeFrom.
+										 */
+										d.upgradeTo = updup.name;
+										if (updup.upgradeFrom == null)
+											updup.upgradeFrom = d.name;
+									} else {
+										up.name = inputName;
+										if (!Core.Instance.library.designs.ContainsKey(currentDesign.name)) {
+											Core.Instance.library.AddDesign(up);
+											d.upgradeTo = up.name;
+											module.DesignName = up.name;
+											module.applyConfig();
+											currentDesign = new Design(up);
+											fetchDesign();
+										}
+									}
+								}
 							}
 						}
-						if (d.tl < d.family.techLevels.Count) {
-							if (GUILayout.Button("Upgrade")) {
-								inputName = String.Format("{0} @ {1}", d.name, d.tl + 2);
-								Design up = new Design(d, d.tl + 1);
-								inputThrust = up.thrust.ToString();
-								inputIgnitions = up.ignitions.ToString();
-								inputTL = d.tl + 2;
-							}
-						}
+						GUILayout.FlexibleSpace();
 					} finally {
 						GUILayout.EndHorizontal();
 					}
@@ -81,22 +120,42 @@ namespace SPEngine.UI
 				if (GUILayout.Button("+") && inputTL < currentDesign.family.techLevels.Count)
 					inputTL += 1;
 				currentDesign.tl = inputTL - 1;
-				GUILayout.Label(String.Format("  Mass {0}, cost {1}", currentDesign.mass, currentDesign.cost));
+				GUILayout.Label(String.Format("  Mass {0:0.###}, cost {1:0.#}", currentDesign.mass, currentDesign.tooledCost));
 				Design.Constraint check = currentDesign.check;
 				switch (check) {
 				case Design.Constraint.OK:
 					if (Core.Instance.library.designs.ContainsKey(currentDesign.name)) {
 						GUILayout.Label("Name in use");
+					} else if (currentDesign.name.Equals("")) {
+						GUILayout.Label("Choose name");
+					} else if (currentDesign.checkDuplicate() != null) {
+						GUILayout.Label(String.Format("Duplicates {0}", currentDesign.checkDuplicate().name));
 					} else if (GUILayout.Button("Apply")) {
-						Core.Instance.library.designs.Add(currentDesign.name, currentDesign);
+						Core.Instance.library.AddDesign(currentDesign);
 						module.DesignName = currentDesign.name;
 						module.applyConfig();
+						currentDesign = new Design(currentDesign);
 					}
+					break;
+				case Design.Constraint.UNLOCK:
+					if (currentDesign.unlockCost == 0f) {
+						GUILayout.Label("Unlocking");
+						currentDesign.Unlock();
+						break;
+					}
+					if (GUILayout.Button("Unlock")) {
+						currentDesign.Unlock();
+					}
+					GUILayout.Label(String.Format("{0:F0}f", currentDesign.unlockCost));
+					break;
+				case Design.Constraint.TECH:
+					GUILayout.Label(String.Format("Requires {0}", currentDesign.techRequired));
 					break;
 				default:
 					GUILayout.Label(check.ToString());
 					break;
 				}
+				GUILayout.FlexibleSpace();
 			} finally {
 				GUILayout.EndHorizontal();
 			}

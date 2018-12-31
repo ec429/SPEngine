@@ -97,8 +97,7 @@ namespace SPEngine
 
 		private void OnSceneChange(GameScenes s)
 		{
-			if (s != GameScenes.FLIGHT)
-				HideGUI();
+			HideGUI();
 		}
 
 		public void OnDestroy()
@@ -113,17 +112,36 @@ namespace SPEngine
 			}
 		}
 
+		private void SaveTechLevels(ConfigNode node)
+		{
+			foreach (Family f in families.Values) {
+				node.AddValue(f.letter.ToString(), f.unlocked.ToString());
+			}
+		}
+
+		private void LoadTechLevels(ConfigNode node)
+		{
+			foreach (Family f in families.Values) {
+				f.unlocked = 0;
+				if (node != null && node.HasValue(f.letter.ToString()))
+					int.TryParse(node.GetValue(f.letter.ToString()), out f.unlocked);
+			}
+		}
+
 		public void Save(ConfigNode node)
 		{
 			Logging.Log("Saving library");
 			ConfigNode ln = node.AddNode("library");
 			library.Save(ln);
+			ConfigNode tn = node.AddNode("techLevels");
+			SaveTechLevels(tn);
 		}
 
 		public void Load(ConfigNode node)
 		{
 			if (node.HasNode("library"))
 				library.Load(node.GetNode("library"));
+			LoadTechLevels(node.GetNode("techLevels"));
 		}
 	}
 

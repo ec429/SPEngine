@@ -9,6 +9,22 @@ namespace SPEngine
 	public class DesignLibrary
 	{
 		public Dictionary<string, Design> designs = new Dictionary<string, Design>();
+		public int generation = 0;
+
+		public void AddDesign(Design d)
+		{
+			designs[d.name] = d;
+			generation++;
+		}
+
+		public Design findDesign(Design d)
+		{
+			foreach (Design r in designs.Values) {
+				if (r.Equals(d))
+					return r;
+			}
+			return null;
+		}
 
 		public void Load(ConfigNode node)
 		{

@@ -12,6 +12,11 @@ namespace SPEngine
 		public float thrust;
 		public int ignitions;
 		public bool tooled = false;
+		public string upgradeFrom = null;
+		public string upgradeTo = null;
+		private Design existingDesign = null;
+		private int generation = -1;
+		private Design checkedDesign = null;
 
 		public Design(ConfigNode node)
 		{
@@ -47,9 +52,32 @@ namespace SPEngine
 			int ni = family.getMaxIgnitions(old.tl) - old.ignitions;
 			ignitions = family.getMaxIgnitions(tl) - ni;
 			familyLetter = family.letter;
+			upgradeFrom = old.name;
 		}
 
-		public enum Constraint { OK, BROKEN, TECHLEVEL, MINTHRUST, MAXTHRUST, IGNITIONS };
+		public Design(Design old) : this(old.name, old.family, old.tl, old.thrust, old.ignitions) // clone
+		{
+		}
+
+		public bool Equals(Design other)
+		{
+			return other.familyLetter == familyLetter &&
+			       other.tl == tl &&
+			       other.thrust == thrust &&
+			       other.ignitions == ignitions;
+		}
+
+		public Design checkDuplicate()
+		{
+			if (generation != Core.Instance.library.generation || !checkedDesign.Equals(this)) {
+				existingDesign = Core.Instance.library.findDesign(this);
+				generation = Core.Instance.library.generation;
+				checkedDesign = new Design(this);
+			}
+			return existingDesign;
+		}
+
+		public enum Constraint { OK, BROKEN, TECHLEVEL, MINTHRUST, MAXTHRUST, IGNITIONS, UNLOCK, TECH };
 
 		public Constraint check { // is this Design within the Family's constraints?
 			get {
@@ -57,6 +85,10 @@ namespace SPEngine
 					return Constraint.BROKEN;
 				if (!family.check(tl))
 					return Constraint.TECHLEVEL;
+				if (!family.haveTechRequired(tl))
+					return Constraint.TECH;
+				if (tl >= family.unlocked)
+					return Constraint.UNLOCK;
 				if (thrust < family.getMinThrust(tl))
 					return Constraint.MINTHRUST;
 				if (thrust > family.getMaxThrust(tl))
@@ -64,6 +96,26 @@ namespace SPEngine
 				if (ignitions < 0 || ignitions > family.getMaxIgnitions(tl))
 					return Constraint.IGNITIONS;
 				return Constraint.OK;
+			}
+		}
+
+		public void Tool()
+		{
+			if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+				Funding.Instance.AddFunds(-toolCost, TransactionReasons.RnDPartPurchase);
+			tooled = true;
+		}
+
+		public void Unlock()
+		{
+			family.Unlock(tl);
+		}
+
+		public float unlockCost {
+			get {
+				if (broken)
+					return float.NaN;
+				return family.unlockCost(tl);
 			}
 		}
 
@@ -80,11 +132,46 @@ namespace SPEngine
 				return family.getMass(tl, thrust);
 			}
 		}
+		private Design upgradeFromDesign {
+			get {
+				if (upgradeFrom == null)
+					return null;
+				if (!Core.Instance.library.designs.ContainsKey(upgradeFrom))
+					return null;
+				return Core.Instance.library.designs[upgradeFrom];
+			}
+		}
+		public float tooledCost {
+			get {
+				if (broken)
+					return float.NaN;
+				return family.getCost(tl, thrust, ignitions);
+			}
+		}
 		public float cost {
 			get {
 				if (broken)
 					return float.NaN;
-				return family.getCost(tl, thrust, ignitions) * (tooled ? 1f : 100f);
+				return tooledCost * ((tooled && tl < family.unlocked) ? 1f : 1000f);
+			}
+		}
+		public float origToolCost {
+			get {
+				if (broken)
+					return float.NaN;
+				return family.getToolCost(tl, thrust, ignitions);
+			}
+		}
+		public float toolCost {
+			get {
+				if (broken)
+					return float.NaN;
+				if (tooled)
+					return 0f;
+				/* Upgrades get to use 80% of the old version's engineering */
+				if (upgradeFromDesign != null && upgradeFromDesign.tooled)
+					return origToolCost - upgradeFromDesign.origToolCost * 0.8f;
+				return origToolCost;
 			}
 		}
 		public FloatCurve isp {
@@ -144,6 +231,10 @@ namespace SPEngine
 			thrust = float.Parse(node.GetValue("thrust"));
 			ignitions = int.Parse(node.GetValue("ignitions"));
 			tooled = bool.Parse(node.GetValue("tooled"));
+			if (node.HasValue("upgradeFrom"))
+				upgradeFrom = node.GetValue("upgradeFrom");
+			if (node.HasValue("upgradeTo"))
+				upgradeTo = node.GetValue("upgradeTo");
 		}
 
 		public void Save(ConfigNode node)
@@ -154,6 +245,10 @@ namespace SPEngine
 			node.AddValue("thrust", thrust.ToString());
 			node.AddValue("ignitions", ignitions.ToString());
 			node.AddValue("tooled", tooled.ToString());
+			if (upgradeFrom != null)
+				node.AddValue("upgradeFrom", upgradeFrom);
+			if (upgradeTo != null)
+				node.AddValue("upgradeTo", upgradeTo);
 		}
 	}
 }

@@ -8,22 +8,27 @@ namespace SPEngine
 	public class TechLevel
 	{
 		public string techRequired;
+		public float entryCost = 0f;
 		public float maxThrust;
 		public FloatCurve isp;
 		public int maxIgnitions;
 		public float mass;
 		public float cost;
+		public float toolCost;
 		public float burnTime;
 
 		public TechLevel(ConfigNode node)
 		{
 			techRequired = node.GetValue("techRequired");
+			if (node.HasValue("entryCost"))
+				entryCost = float.Parse(node.GetValue("entryCost"));
 			maxThrust = float.Parse(node.GetValue("maxThrust"));
 			isp = new FloatCurve();
 			isp.Load(node.GetNode("isp"));
 			maxIgnitions = int.Parse(node.GetValue("maxIgnitions"));
 			mass = float.Parse(node.GetValue("mass"));
 			cost = float.Parse(node.GetValue("cost"));
+			toolCost = float.Parse(node.GetValue("toolCost"));
 			burnTime = float.Parse(node.GetValue("burnTime"));
 			/* TODO rest of reliability numbers */
 		}
@@ -32,9 +37,17 @@ namespace SPEngine
 		{
 			return (float)Math.Pow(thrust / maxThrust, 0.8f) * mass;
 		}
+		private float costFactor(float thrust, int ignitions)
+		{
+			return (float)Math.Pow(thrust / maxThrust, 1.2f) * (float)Math.Pow((ignitions + 1.0f) / (maxIgnitions + 1.0f), 0.2);
+		}
 		public float getCost(float thrust, int ignitions)
 		{
-			return (float)Math.Pow(thrust / maxThrust, 1.2f) * (float)Math.Pow((ignitions + 1.0f) / (maxIgnitions + 1.0f), 0.2) * cost;
+			return costFactor(thrust, ignitions) * cost;
+		}
+		public float getToolCost(float thrust, int ignitions)
+		{
+			return costFactor(thrust, ignitions) * toolCost;
 		}
 		public float getScaleFactor(float thrust)
 		{
@@ -54,6 +67,7 @@ namespace SPEngine
 		};
 		public Flags flags = 0;
 		public List<TechLevel> techLevels = new List<TechLevel>();
+		public int unlocked = 0;
 		public Design baseDesign;
 
 		public Family(ConfigNode node)
@@ -70,6 +84,37 @@ namespace SPEngine
 			foreach (ConfigNode tn in node.GetNodes("TechLevel"))
 				techLevels.Add(new TechLevel(tn));
 			baseDesign = new Design(this, 0);
+		}
+
+		public void Unlock(int tl)
+		{
+			if (!check(tl))
+				return;
+			while (unlocked <= tl) {
+				if (!haveTechRequired(unlocked))
+					return;
+				TechLevel next = techLevels[unlocked];
+				if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER) {
+					if (Funding.Instance.Funds < next.entryCost)
+						return;
+					Funding.Instance.AddFunds(-next.entryCost, TransactionReasons.RnDPartPurchase);
+				}
+				unlocked += 1;
+			}
+		}
+
+		public float unlockCost(int tl)
+		{
+			int t = unlocked;
+			float result = 0f;
+			if (!check(tl))
+				return float.NaN;
+			while (t <= tl) {
+				TechLevel next = techLevels[t];
+				result += next.entryCost;
+				t += 1;
+			}
+			return result;
 		}
 
 		public bool check(int tl)
@@ -99,11 +144,29 @@ namespace SPEngine
 				return float.NaN;
 			return techLevels[tl].getMass(thrust);
 		}
+		public float getMaxMass(int tl)
+		{
+			if (!check(tl))
+				return float.NaN;
+			return techLevels[tl].mass;
+		}
 		public float getCost(int tl, float thrust, int ignitions)
 		{
 			if (!check(tl))
 				return float.NaN;
 			return techLevels[tl].getCost(thrust, ignitions);
+		}
+		public float getMaxCost(int tl)
+		{
+			if (!check(tl))
+				return float.NaN;
+			return techLevels[tl].cost;
+		}
+		public float getToolCost(int tl, float thrust, int ignitions)
+		{
+			if (!check(tl))
+				return float.NaN;
+			return techLevels[tl].getToolCost(thrust, ignitions);
 		}
 		public FloatCurve getIsp(int tl)
 		{
@@ -130,6 +193,15 @@ namespace SPEngine
 			if (!check(tl))
 				return null;
 			return techLevels[tl].techRequired;
+		}
+		public bool haveTechRequired(int tl)
+		{
+			string tech = getTechRequired(tl);
+			if (tech == null || tech.Equals(""))
+				return true;
+			if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
+				return true;
+			return ResearchAndDevelopment.GetTechnologyState(tech) == RDTech.State.Available;
 		}
 		public float getScaleFactor(int tl, float thrust)
 		{

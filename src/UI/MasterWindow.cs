@@ -8,6 +8,7 @@ namespace SPEngine.UI
 	{
 		Vector2 familyScroll, designScroll;
 		char showingFamily = '\0';
+		string confirmTool = null;
 		public MasterWindow() :
 			base(new Guid("4607f309-0fc8-4c8a-bd7b-d214d0174bc8"),
 			     "SPEngine", new Rect(100, 100, 515, 320))
@@ -21,8 +22,10 @@ namespace SPEngine.UI
 			foreach (Family f in Core.Instance.families.Values) {
 				GUILayout.BeginHorizontal();
 				try {
-					if (GUILayout.Button(f.letter.ToString(), boldBtnStyle))
+					if (GUILayout.Button(f.letter.ToString(), boldBtnStyle, GUILayout.ExpandWidth(false))) {
 						showingFamily = f.letter;
+						confirmTool = null;
+					}
 					GUILayout.Label(f.description);
 				} finally {
 					GUILayout.EndHorizontal();
@@ -33,8 +36,76 @@ namespace SPEngine.UI
 		private void designList()
 		{
 			foreach (Design d in Core.Instance.library.designs.Values)
-				if (d.family.letter == showingFamily)
-					GUILayout.Label(String.Format("{0}: {1}kN, {2} ignitions.  Mass {3}, cost {4}", d.name, d.thrust, d.ignitions, d.mass, d.cost));
+				if (d.family.letter == showingFamily) {
+					GUILayout.BeginHorizontal();
+					try {
+						GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions; TL {5}.  Mass {3:0.###}t, cost {4:0.#}f", d.name, d.thrust, d.ignitions, d.mass, d.cost, d.tl + 1));
+						switch (d.check) {
+						case Design.Constraint.OK:
+							if (!d.tooled) {
+								if (confirmTool == d.name) {
+									GUILayout.Label("Tool:");
+									if (GUILayout.Button("OK"))
+										d.Tool();
+									else if (GUILayout.Button("CANCEL"))
+										confirmTool = null;
+								} else {
+									if (GUILayout.Button("TOOL"))
+										confirmTool = d.name;
+								}
+								GUILayout.Label(String.Format("{0:0.#}f", d.toolCost));
+							}
+							break;
+						case Design.Constraint.UNLOCK:
+							if (d.unlockCost == 0f) {
+								GUILayout.Label("Unlocking");
+								d.Unlock();
+								break;
+							}
+							if (GUILayout.Button("Unlock")) {
+								d.Unlock();
+							}
+							GUILayout.Label(String.Format("{0:F0}f", d.unlockCost));
+							break;
+						case Design.Constraint.TECH:
+							GUILayout.Label(String.Format("Requires {0}", d.techRequired));
+							break;
+						default:
+							GUILayout.Label(d.check.ToString());
+							break;
+						}
+						GUILayout.FlexibleSpace();
+					} finally {
+						GUILayout.EndHorizontal();
+					}
+				}
+		}
+
+		public void techLevelList()
+		{
+			Family f = Core.Instance.families[showingFamily];
+			for (int tl = 0; tl < f.techLevels.Count; tl++) {
+				GUILayout.BeginHorizontal();
+				try {
+					GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions, {3:0.#}s Isp(vac), {6:0.#}s ISP(atm), mass {4:0.###}t, cost {5:0.#}f", tl, f.getMaxThrust(tl), f.getMaxIgnitions(tl), f.getIspVac(tl), f.getMaxMass(tl), f.getMaxCost(tl), f.getIspAtmo(tl)));
+					if (!f.haveTechRequired(tl)) {
+						GUILayout.Label(String.Format("Requires {0}", f.getTechRequired(tl)));
+					} else if (tl >= f.unlocked) {
+						if (f.unlockCost(tl) == 0f) {
+							GUILayout.Label("Unlocking");
+							f.Unlock(tl);
+							break;
+						}
+						if (GUILayout.Button("Unlock")) {
+							f.Unlock(tl);
+						}
+						GUILayout.Label(String.Format("{0:F0}f", f.unlockCost(tl)));
+					}
+					GUILayout.FlexibleSpace();
+				} finally {
+					GUILayout.EndHorizontal();
+				}
+			}
 		}
 
 		public override void Window(int id)
@@ -57,6 +128,7 @@ namespace SPEngine.UI
 						GUILayout.Label(f.letter.ToString(), boldLblStyle);
 						GUILayout.Label(": ");
 						GUILayout.Label(f.description);
+						GUILayout.FlexibleSpace();
 					} finally {
 						GUILayout.EndHorizontal();
 					}
@@ -66,6 +138,7 @@ namespace SPEngine.UI
 					} finally {
 						GUILayout.EndScrollView();
 					}
+					techLevelList();
 					if (GUILayout.Button("Back to families"))
 						showingFamily = '\0';
 				}
