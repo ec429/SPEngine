@@ -61,11 +61,6 @@ namespace SPEngine
 		public string description;
 		public Dictionary<string, float> propellants = new Dictionary<string, float>();
 		public float minTf = 0.2f;
-		public enum Flags {
-			NONE = 0,
-			NO_GIMBAL = 0x1,
-		};
-		public Flags flags = 0;
 		public List<TechLevel> techLevels = new List<TechLevel>();
 		public int unlocked = 0;
 		public Design baseDesign;
@@ -79,8 +74,6 @@ namespace SPEngine
 				propellants.Add(v.name, float.Parse(v.value));
 			if (node.HasValue("minTf"))
 				minTf = float.Parse(node.GetValue("minTf"));
-			if (node.HasValue("noGimbal"))
-				flags |= Flags.NO_GIMBAL;
 			foreach (ConfigNode tn in node.GetNodes("TechLevel"))
 				techLevels.Add(new TechLevel(tn));
 			baseDesign = new Design(this, 0);
