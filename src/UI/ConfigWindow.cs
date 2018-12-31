@@ -46,7 +46,7 @@ namespace SPEngine.UI
 							module.applyConfig();
 							fetchDesign();
 						}
-						GUILayout.Label(String.Format(": {0:0.##}kN, {1} ignitions; TL {4}.  Mass {2:0.###}, cost {3:0.#}.", d.thrust, d.ignitions, d.mass, d.cost, d.tl + 1));
+						GUILayout.Label(String.Format(": {0:0.##}kN, {1} ignitions; TL {2}.  Mass {3:0.###}, cost {4:0.#} {5}{6}", d.thrust, d.ignitions, d.tl + 1, d.mass, d.cost, d.ullage ? "[U]" : "", d.pressureFed ? "[P]" : ""));
 						if (!d.tooled) {
 							if (confirmTool == d.name) {
 								GUILayout.Label("Tool:");
@@ -120,7 +120,7 @@ namespace SPEngine.UI
 				if (GUILayout.Button("+") && inputTL < currentDesign.family.techLevels.Count)
 					inputTL += 1;
 				currentDesign.tl = inputTL - 1;
-				GUILayout.Label(String.Format("  Mass {0:0.###}, cost {1:0.#}", currentDesign.mass, currentDesign.tooledCost));
+				GUILayout.Label(String.Format("  Mass {0:0.###}, cost {1:0.#} {2}{3}", currentDesign.mass, currentDesign.tooledCost, currentDesign.ullage ? "[U]" : "", currentDesign.pressureFed ? "[P]" : ""));
 				Design.Constraint check = currentDesign.check;
 				switch (check) {
 				case Design.Constraint.OK:

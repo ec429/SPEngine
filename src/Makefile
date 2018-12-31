@@ -1,4 +1,5 @@
 LIBDIR := $(HOME)/ksp/KSP_Data/Managed
+KSPDTA := $(HOME)/ksp/GameData/
 BINDIR := bin
 OUTDIR := ../GameData/SPEngine/Plugins
 
@@ -7,7 +8,7 @@ SOURCES := Core.cs Util.cs Design.cs DesignLibrary.cs Family.cs ModuleSPEngine.c
 all: $(OUTDIR)/SPEngine.dll
 
 $(BINDIR)/SPEngine.dll: $(SOURCES)
-	mcs -t:library -nostdlib -r:$(LIBDIR)/Assembly-CSharp.dll,$(LIBDIR)/UnityEngine.dll,$(LIBDIR)/UnityEngine.UI.dll,$(LIBDIR)/System.dll,$(LIBDIR)/System.Core.dll,$(LIBDIR)/mscorlib.dll -out:$@ $(SOURCES)
+	mcs -t:library -nostdlib -r:$(LIBDIR)/Assembly-CSharp.dll,$(LIBDIR)/UnityEngine.dll,$(LIBDIR)/UnityEngine.UI.dll,$(LIBDIR)/System.dll,$(LIBDIR)/System.Core.dll,$(LIBDIR)/mscorlib.dll,$(KSPDTA)/RealFuels/Plugins/RealFuels.dll -out:$@ $(SOURCES)
 
 $(OUTDIR)/SPEngine.dll: $(BINDIR)/SPEngine.dll
 	cp $< $@

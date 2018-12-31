@@ -23,3 +23,4 @@ using System.Runtime.InteropServices;
 // non-hacky way in KSP.  Format is (AssemblyProduct, major, minor), and it
 // does not appear to have a hard requirement to match the assembly version.
 [assembly: KSPAssembly("SPEngine", 0, 1)]
+[assembly: KSPAssemblyDependency("RealFuels", 12, 6)]

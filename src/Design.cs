@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SPEngine
@@ -170,7 +171,7 @@ namespace SPEngine
 					return 0f;
 				/* Upgrades get to use 80% of the old version's engineering */
 				if (upgradeFromDesign != null && upgradeFromDesign.tooled)
-					return origToolCost - upgradeFromDesign.origToolCost * 0.8f;
+					return Math.Max(origToolCost - upgradeFromDesign.origToolCost * 0.8f, 0f);
 				return origToolCost;
 			}
 		}
@@ -207,6 +208,34 @@ namespace SPEngine
 				if (broken)
 					return null;
 				return family.getTechRequired(tl);
+			}
+		}
+		public bool ullage {
+			get {
+				if (broken)
+					return true;
+				return family.getUllage(tl);
+			}
+		}
+		public bool pressureFed {
+			get {
+				if (broken)
+					return true;
+				return family.getPressureFed(tl);
+			}
+		}
+		public List<ConfigNode> propellants {
+			get {
+				if (broken)
+					return null;
+				return family.getPropellants(tl);
+			}
+		}
+		public List<ConfigNode> ignitorResources {
+			get {
+				if (broken)
+					return null;
+				return family.getIgnitorResources(tl);
 			}
 		}
 		public float scaleFactor {

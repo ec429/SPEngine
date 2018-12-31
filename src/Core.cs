@@ -29,12 +29,16 @@ namespace SPEngine
 			masterWindow = new UI.MasterWindow();
 			families = new Dictionary<char, Family>();
 			foreach (ConfigNode cn in GameDatabase.Instance.GetConfigNodes("SPEFamily")) {
-				Family f = new Family(cn);
-				families.Add(f.letter, f);
+				try {
+					Family f = new Family(cn);
+					families.Add(f.letter, f);
+				} catch (Exception ex) {
+					Logging.LogException(ex);
+				}
 			}
 			if (ScenarioSPEngine.Instance != null)
 				Load(ScenarioSPEngine.Instance.node);
-			Logging.Log("Core loaded successfully.");
+			Logging.Log("Core loaded successfully");
 		}
 
 		public void EditPart(ModuleSPEngine m)

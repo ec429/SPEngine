@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SPEngine
@@ -16,21 +17,84 @@ namespace SPEngine
 		public float cost;
 		public float toolCost;
 		public float burnTime;
+		public bool ullage = true;
+		public bool pressureFed = false;
+		public List<ConfigNode> propellants;
+		public List<ConfigNode> ignitorResources;
 
 		public TechLevel(ConfigNode node)
 		{
 			techRequired = node.GetValue("techRequired");
-			if (node.HasValue("entryCost"))
-				entryCost = float.Parse(node.GetValue("entryCost"));
-			maxThrust = float.Parse(node.GetValue("maxThrust"));
-			isp = new FloatCurve();
-			isp.Load(node.GetNode("isp"));
-			maxIgnitions = int.Parse(node.GetValue("maxIgnitions"));
-			mass = float.Parse(node.GetValue("mass"));
-			cost = float.Parse(node.GetValue("cost"));
-			toolCost = float.Parse(node.GetValue("toolCost"));
-			burnTime = float.Parse(node.GetValue("burnTime"));
+			if (node.HasValue("entryCost")) {
+				try {
+					entryCost = float.Parse(node.GetValue("entryCost"));
+				} catch {
+					Logging.LogFormat("Bad entryCost {0}", node.GetValue("entryCost"));
+					throw;
+				}
+			}
+			try {
+				maxThrust = float.Parse(node.GetValue("maxThrust"));
+			} catch {
+				Logging.LogFormat("Bad maxThrust {0}", node.GetValue("maxThrust"));
+				throw;
+			}
+			try {
+				isp = new FloatCurve();
+				isp.Load(node.GetNode("isp"));
+			} catch {
+				Logging.LogFormat("Bad isp {0}", node.GetNode("isp"));
+				throw;
+			}
+			try {
+				maxIgnitions = int.Parse(node.GetValue("maxIgnitions"));
+			} catch {
+				Logging.LogFormat("Bad maxIgnitions {0}", node.GetValue("maxIgnitions"));
+				throw;
+			}
+			try {
+				mass = float.Parse(node.GetValue("mass"));
+			} catch {
+				Logging.LogFormat("Bad mass {0}", node.GetValue("mass"));
+				throw;
+			}
+			try {
+				cost = float.Parse(node.GetValue("cost"));
+			} catch {
+				Logging.LogFormat("Bad cost {0}", node.GetValue("cost"));
+				throw;
+			}
+			try {
+				toolCost = float.Parse(node.GetValue("toolCost"));
+			} catch {
+				Logging.LogFormat("Bad toolCost {0}", node.GetValue("toolCost"));
+				throw;
+			}
+			try {
+				burnTime = float.Parse(node.GetValue("burnTime"));
+			} catch {
+				Logging.LogFormat("Bad burnTime {0}", node.GetValue("burnTime"));
+				throw;
+			}
 			/* TODO rest of reliability numbers */
+			if (node.HasValue("ullage")) {
+				try {
+					ullage = bool.Parse(node.GetValue("ullage"));
+				} catch {
+					Logging.LogFormat("Bad ullage {0}", node.GetValue("ullage"));
+					throw;
+				}
+			}
+			if (node.HasValue("pressureFed")) {
+				try {
+					pressureFed = bool.Parse(node.GetValue("pressureFed"));
+				} catch {
+					Logging.LogFormat("Bad pressureFed {0}", node.GetValue("pressureFed"));
+					throw;
+				}
+			}
+			propellants = node.GetNodes("PROPELLANT").ToList();
+			ignitorResources = node.GetNodes("IGNITOR_RESOURCE").ToList();
 		}
 
 		public float getMass(float thrust)
@@ -59,7 +123,6 @@ namespace SPEngine
 	{
 		public char letter = '?';
 		public string description;
-		public Dictionary<string, float> propellants = new Dictionary<string, float>();
 		public float minTf = 0.2f;
 		public List<TechLevel> techLevels = new List<TechLevel>();
 		public int unlocked = 0;
@@ -68,15 +131,17 @@ namespace SPEngine
 		public Family(ConfigNode node)
 		{
 			letter = node.GetValue("letter")[0];
-			description = node.GetValue("description");
-			ConfigNode pn = node.GetNode("Propellants");
-			foreach (ConfigNode.Value v in pn.values)
-				propellants.Add(v.name, float.Parse(v.value));
-			if (node.HasValue("minTf"))
-				minTf = float.Parse(node.GetValue("minTf"));
-			foreach (ConfigNode tn in node.GetNodes("TechLevel"))
-				techLevels.Add(new TechLevel(tn));
-			baseDesign = new Design(this, 0);
+			try {
+				description = node.GetValue("description");
+				if (node.HasValue("minTf"))
+					minTf = float.Parse(node.GetValue("minTf"));
+				foreach (ConfigNode tn in node.GetNodes("TechLevel"))
+					techLevels.Add(new TechLevel(tn));
+				baseDesign = new Design(this, 0);
+			} catch (Exception ex) {
+				Logging.LogFormat("Error occurred in family {0}, TL {1}", letter, techLevels.Count);
+				throw ex;
+			}
 		}
 
 		public void Unlock(int tl)
@@ -195,6 +260,30 @@ namespace SPEngine
 			if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
 				return true;
 			return ResearchAndDevelopment.GetTechnologyState(tech) == RDTech.State.Available;
+		}
+		public bool getUllage(int tl)
+		{
+			if (!check(tl))
+				return true;
+			return techLevels[tl].ullage;
+		}
+		public bool getPressureFed(int tl)
+		{
+			if (!check(tl))
+				return true;
+			return techLevels[tl].pressureFed;
+		}
+		public List<ConfigNode> getPropellants(int tl)
+		{
+			if (!check(tl))
+				return null;
+			return techLevels[tl].propellants;
+		}
+		public List<ConfigNode> getIgnitorResources(int tl)
+		{
+			if (!check(tl))
+				return null;
+			return techLevels[tl].ignitorResources;
 		}
 		public float getScaleFactor(int tl, float thrust)
 		{

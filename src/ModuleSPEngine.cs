@@ -16,6 +16,8 @@ namespace SPEngine
 		public string familyLetter;
 
 		private ModuleEngines engine;
+		private RealFuels.ModuleEngineConfigs engineConfig;
+
 		private float initialScale;
 
 		public override string GetInfo()
@@ -83,6 +85,37 @@ namespace SPEngine
 			}
 			cacheDesign = design;
 			Logging.LogFormat("Applying design '{2}': thrust {0}, scale {1}", design.thrust, design.scaleFactor, design.name);
+			if (engineConfig == null)
+				applyConfigStock();
+			else
+				applyConfigRF();
+		}
+
+		private void applyConfigRF()
+		{
+			engineConfig.configs.Clear();
+			ConfigNode node = new ConfigNode();
+			/* Need a unique name for this engine, so that we won't confuse TestFlight too much */
+			string configName = String.Format("SPEngine-{0}-{1}", design.familyLetter, design.name);
+			node.AddValue("name", configName);
+			node.AddValue("maxThrust", design.thrust.ToString());
+			node.AddValue("minThrust", design.thrust.ToString());
+			node.AddValue("ignitions", design.ignitions.ToString());
+			ConfigNode ispn = new ConfigNode();
+			design.isp.Save(ispn);
+			node.AddNode("atmosphereCurve", ispn);
+			node.AddValue("ullage", design.ullage.ToString());
+			node.AddValue("pressureFed", design.pressureFed.ToString());
+			for (int i = 0; i < design.propellants.Count; i++)
+				node.AddNode(design.propellants[i]);
+			for (int i = 0; i < design.ignitorResources.Count; i++)
+				node.AddNode(design.ignitorResources[i]);
+			engineConfig.configs.Add(node);
+			engineConfig.SetConfiguration(configName);
+		}
+
+		private void applyConfigStock()
+		{
 			engine.maxThrust = design.thrust;
 			engine.minThrust = engine.maxThrust; // Assume no throttling for now.  Later it'll go in the Family
 			engine.atmosphereCurve = design.isp;
@@ -99,6 +132,7 @@ namespace SPEngine
 		{
 			initialScale = part.scaleFactor;
 			engine = part.FindModuleImplementing<ModuleEngines>();
+			engineConfig = part.FindModuleImplementing<RealFuels.ModuleEngineConfigs>();
 			applyConfig();
 		}
 

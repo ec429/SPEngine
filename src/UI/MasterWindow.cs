@@ -11,7 +11,7 @@ namespace SPEngine.UI
 		string confirmTool = null;
 		public MasterWindow() :
 			base(new Guid("4607f309-0fc8-4c8a-bd7b-d214d0174bc8"),
-			     "SPEngine", new Rect(100, 100, 515, 320))
+			     "SPEngine", new Rect(100, 100, 615, 320))
 		{
 			familyScroll = new Vector2();
 			designScroll = new Vector2();
@@ -39,7 +39,7 @@ namespace SPEngine.UI
 				if (d.family.letter == showingFamily) {
 					GUILayout.BeginHorizontal();
 					try {
-						GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions; TL {5}.  Mass {3:0.###}t, cost {4:0.#}f", d.name, d.thrust, d.ignitions, d.mass, d.cost, d.tl + 1));
+						GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions; TL {3}.  Mass {4:0.###}t, cost {5:0.#}f {6}{7}", d.name, d.thrust, d.ignitions, d.tl + 1, d.mass, d.cost, d.ullage ? "[U]" : "", d.pressureFed ? "[P]" : ""));
 						switch (d.check) {
 						case Design.Constraint.OK:
 							if (!d.tooled) {
@@ -87,7 +87,7 @@ namespace SPEngine.UI
 			for (int tl = 0; tl < f.techLevels.Count; tl++) {
 				GUILayout.BeginHorizontal();
 				try {
-					GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions, {3:0.#}s Isp(vac), {6:0.#}s ISP(atm), mass {4:0.###}t, cost {5:0.#}f", tl, f.getMaxThrust(tl), f.getMaxIgnitions(tl), f.getIspVac(tl), f.getMaxMass(tl), f.getMaxCost(tl), f.getIspAtmo(tl)));
+					GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions, {3:0.#}s Isp(vac), {4:0.#}s ISP(atm), mass {5:0.###}t, cost {6:0.#}f {7}{8}", tl, f.getMaxThrust(tl), f.getMaxIgnitions(tl), f.getIspVac(tl), f.getIspAtmo(tl), f.getMaxMass(tl), f.getMaxCost(tl), f.getUllage(tl) ? "[U]" : "", f.getPressureFed(tl) ? "[P]" : ""));
 					if (!f.haveTechRequired(tl)) {
 						GUILayout.Label(String.Format("Requires {0}", f.getTechRequired(tl)));
 					} else if (tl >= f.unlocked) {
@@ -110,11 +110,11 @@ namespace SPEngine.UI
 
 		public override void Window(int id)
 		{
-			GUILayout.BeginVertical(GUILayout.Width(495));
+			GUILayout.BeginVertical(GUILayout.Width(595));
 			try {
 				if (showingFamily == '\0') {
 					GUILayout.Label("Engine Families", headingStyle);
-					familyScroll = GUILayout.BeginScrollView(familyScroll, GUILayout.Width(495), GUILayout.Height(160));
+					familyScroll = GUILayout.BeginScrollView(familyScroll, GUILayout.Width(595), GUILayout.Height(160));
 					try {
 						familyList();
 					} finally {
@@ -132,7 +132,7 @@ namespace SPEngine.UI
 					} finally {
 						GUILayout.EndHorizontal();
 					}
-					designScroll = GUILayout.BeginScrollView(designScroll, GUILayout.Width(495), GUILayout.Height(160));
+					designScroll = GUILayout.BeginScrollView(designScroll, GUILayout.Width(595), GUILayout.Height(160));
 					try {
 						designList();
 					} finally {
