@@ -92,6 +92,9 @@ namespace SPEngine.UI
 											d.upgradeTo = up.name;
 											module.DesignName = up.name;
 											module.applyConfig();
+											/* Notify the editor that we changed the module's Design */
+											if (EditorLogic.fetch != null && EditorLogic.fetch.ship != null && HighLogic.LoadedSceneIsEditor)
+												GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
 											currentDesign = new Design(up);
 											fetchDesign();
 										}
@@ -135,6 +138,9 @@ namespace SPEngine.UI
 						module.DesignName = currentDesign.name;
 						module.applyConfig();
 						currentDesign = new Design(currentDesign);
+						/* Notify the editor that we changed the module's Design */
+						if (EditorLogic.fetch != null && EditorLogic.fetch.ship != null && HighLogic.LoadedSceneIsEditor)
+							GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
 					}
 					break;
 				case Design.Constraint.UNLOCK:

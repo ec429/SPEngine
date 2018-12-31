@@ -9,7 +9,7 @@ namespace SPEngine
 	public class TechLevel
 	{
 		public string techRequired;
-		public float entryCost = 0f;
+		public List<string> entryCosts;
 		public float maxThrust;
 		public FloatCurve isp;
 		public int maxIgnitions;
@@ -25,14 +25,7 @@ namespace SPEngine
 		public TechLevel(ConfigNode node)
 		{
 			techRequired = node.GetValue("techRequired");
-			if (node.HasValue("entryCost")) {
-				try {
-					entryCost = float.Parse(node.GetValue("entryCost"));
-				} catch {
-					Logging.LogFormat("Bad entryCost {0}", node.GetValue("entryCost"));
-					throw;
-				}
-			}
+			entryCosts = node.GetValues("entryCost").ToList();
 			try {
 				maxThrust = float.Parse(node.GetValue("maxThrust"));
 			} catch {
@@ -113,6 +106,40 @@ namespace SPEngine
 		{
 			return costFactor(thrust, ignitions) * toolCost;
 		}
+		public float entryCost {
+			get {
+				RealFuels.EntryCostManager ecm = RealFuels.EntryCostManager.Instance;
+				float sum = 0;
+				for (int i = 0; i < entryCosts.Count; i++) {
+					float val;
+					if (float.TryParse(entryCosts[i], out val)) {
+						sum += val;
+					} else {
+						if (!ecm.ConfigUnlocked(entryCosts[i]))
+							sum += (float)ecm.ConfigEntryCost(entryCosts[i]);
+					}
+				}
+				return sum;
+			}
+		}
+		public bool Unlock() {
+			if (HighLogic.CurrentGame.Mode != Game.Modes.CAREER)
+				return true;
+			if (HighLogic.CurrentGame.Parameters.Difficulty.BypassEntryPurchaseAfterResearch)
+				return true;
+			if (entryCost > Funding.Instance.Funds)
+				return false;
+			RealFuels.EntryCostManager ecm = RealFuels.EntryCostManager.Instance;
+			for (int i = 0; i < entryCosts.Count; i++) {
+				float val;
+				if (float.TryParse(entryCosts[i], out val)) {
+					Funding.Instance.AddFunds(-val, TransactionReasons.RnDPartPurchase);
+				} else {
+					ecm.PurchaseConfig(entryCosts[i]);
+				}
+			}
+			return true;
+		}
 		public float getScaleFactor(float thrust)
 		{
 			return (float)Math.Sqrt(thrust / maxThrust);
@@ -152,11 +179,8 @@ namespace SPEngine
 				if (!haveTechRequired(unlocked))
 					return;
 				TechLevel next = techLevels[unlocked];
-				if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER) {
-					if (Funding.Instance.Funds < next.entryCost)
-						return;
-					Funding.Instance.AddFunds(-next.entryCost, TransactionReasons.RnDPartPurchase);
-				}
+				if (!next.Unlock())
+					return;
 				unlocked += 1;
 			}
 		}
