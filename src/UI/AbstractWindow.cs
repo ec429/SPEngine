@@ -18,7 +18,7 @@ namespace SPEngine.UI
 		private double mTooltipTimer;
 		private readonly Guid mGuid;
 		public static Dictionary<Guid, AbstractWindow> Windows = new Dictionary<Guid, AbstractWindow>();
-		public static GUIStyle headingStyle;
+		public static GUIStyle headingStyle, boldBtnStyle, boldLblStyle;
 		/// <summary>The initial width of this window</summary>
 		public float mInitialWidth;
 		/// <summary>The initial height of this window</summary>
@@ -34,6 +34,14 @@ namespace SPEngine.UI
 			{
 				fontStyle = FontStyle.Bold,
 				fontSize = 14,
+			};
+			boldBtnStyle = new GUIStyle(HighLogic.Skin.button)
+			{
+				fontStyle = FontStyle.Bold,
+			};
+			boldLblStyle = new GUIStyle(HighLogic.Skin.label)
+			{
+				fontStyle = FontStyle.Bold,
 			};
 		}
 

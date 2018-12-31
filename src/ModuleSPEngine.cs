@@ -8,7 +8,7 @@ namespace SPEngine
 {
 	public class ModuleSPEngine : PartModule, IPartCostModifier, IPartMassModifier
 	{
-		[KSPField(isPersistant=true)]
+		[KSPField(isPersistant=true, guiActive=true, guiActiveEditor=true, guiName="Design")]
 		public string DesignName = "";
 		private Design cacheDesign = null;
 
@@ -27,14 +27,19 @@ namespace SPEngine
 			get {
 				if (cacheDesign != null)
 					return cacheDesign;
+				Logging.LogFormat("get design: {0} fL {1} DN {2}", Core.Instance == null ? "no core" : "core", familyLetter, DesignName);
 				if (Core.Instance == null)
 					return null;
 				if (!Core.Instance.library.designs.ContainsKey(DesignName)) {
-					if (familyLetter == null)
+					Logging.LogFormat("Design {0} not found; families {1}", DesignName, Core.Instance.families == null ? "missing" : "found");
+					if (familyLetter == null || Core.Instance.families == null)
 						return null;
-					if (!Core.Instance.families.ContainsKey(familyLetter[0]))
+					if (!Core.Instance.families.ContainsKey(familyLetter[0])) {
+						Logging.Log("Family not found");
 						return null;
+					}
 					Family f = Core.Instance.families[familyLetter[0]];
+					Logging.LogFormat("Family {0}found", f == null ? "not " : "");
 					return f == null ? null : f.baseDesign;
 				}
 				return Core.Instance.library.designs[DesignName];
@@ -45,7 +50,7 @@ namespace SPEngine
 
 		public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
 		{
-			return design == null ? defaultCost : design.cost;
+			return design == null || design.broken ? 0 : design.cost - defaultCost;
 		}
 
 		public ModifierChangeWhen GetModuleCostChangeWhen()
@@ -59,7 +64,7 @@ namespace SPEngine
 
 		public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
 		{
-			return design == null ? defaultMass : design.mass;
+			return design == null || design.broken ? 0 : design.mass - defaultMass;
 		}
 
 		public ModifierChangeWhen GetModuleMassChangeWhen()
@@ -74,6 +79,10 @@ namespace SPEngine
 			cacheDesign = null;
 			if (design == null)
 				return;
+			if (design.check != Design.Constraint.OK) {
+				Logging.LogFormat("Broken design {0}: letter={1}, problem={2}", design.name, design.familyLetter, design.check);
+				return;
+			}
 			cacheDesign = design;
 			Logging.LogFormat("Applying design '{2}': thrust {0}, scale {1}", design.thrust, design.scaleFactor, design.name);
 			engine.maxThrust = design.thrust;

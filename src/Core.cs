@@ -13,6 +13,7 @@ namespace SPEngine
 		public static Core Instance { get; protected set; }
 		private ApplicationLauncherButton button;
 		private UI.MasterWindow masterWindow;
+		private UI.ConfigWindow configWindow;
 		public DesignLibrary library;
 		public Dictionary<char, Family> families;
 
@@ -25,20 +26,26 @@ namespace SPEngine
 
 			Instance = this;
 			library = new DesignLibrary();
-			if (ScenarioSPEngine.Instance != null)
-				Load(ScenarioSPEngine.Instance.node);
-			masterWindow = new UI.MasterWindow(library);
+			masterWindow = new UI.MasterWindow();
 			families = new Dictionary<char, Family>();
 			foreach (ConfigNode cn in GameDatabase.Instance.GetConfigNodes("SPEFamily")) {
 				Family f = new Family(cn);
 				families.Add(f.letter, f);
 			}
+			if (ScenarioSPEngine.Instance != null)
+				Load(ScenarioSPEngine.Instance.node);
 			Logging.Log("Core loaded successfully.");
 		}
 
 		public void EditPart(ModuleSPEngine m)
 		{
-			/* TODO open it in the GUI */
+			if (configWindow != null) {
+				configWindow.Hide();
+				configWindow = null;
+				return;
+			}
+			configWindow = new UI.ConfigWindow(m);
+			configWindow.Show();
 		}
 
 		protected void Awake()
@@ -62,8 +69,6 @@ namespace SPEngine
 
 		private void OnGuiAppLauncherReady()
 		{
-/*			if (HighLogic.CurrentGame.Mode != global::Game.Modes.CAREER)
-				return;*/
 			try {
 				button = ApplicationLauncher.Instance.AddModApplication(
 					masterWindow.Show,
@@ -77,12 +82,17 @@ namespace SPEngine
 				GameEvents.onGameSceneLoadRequested.Add(this.OnSceneChange);
 			} catch (Exception ex) {
 				Logging.LogException(ex);
+				Logging.LogFormat("{0}mW", masterWindow == null ? "no " : "");
 			}
 		}
 
 		private void HideGUI()
 		{
 			masterWindow.Hide();
+			if (configWindow != null) {
+				configWindow.Hide();
+				configWindow = null;
+			}
 		}
 
 		private void OnSceneChange(GameScenes s)
@@ -105,6 +115,7 @@ namespace SPEngine
 
 		public void Save(ConfigNode node)
 		{
+			Logging.Log("Saving library");
 			ConfigNode ln = node.AddNode("library");
 			library.Save(ln);
 		}

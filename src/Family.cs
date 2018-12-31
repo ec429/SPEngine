@@ -72,9 +72,14 @@ namespace SPEngine
 			baseDesign = new Design(this, 0);
 		}
 
+		public bool check(int tl)
+		{
+			return tl >= 0 && tl < techLevels.Count;
+		}
+
 		public float getMaxThrust(int tl)
 		{
-			if (tl < 0 || tl >= techLevels.Count)
+			if (!check(tl))
 				return float.NaN;
 			return techLevels[tl].maxThrust;
 		}
@@ -84,25 +89,25 @@ namespace SPEngine
 		}
 		public int getMaxIgnitions(int tl)
 		{
-			if (tl < 0 || tl >= techLevels.Count)
+			if (!check(tl))
 				return 0;
 			return techLevels[tl].maxIgnitions;
 		}
 		public float getMass(int tl, float thrust)
 		{
-			if (tl < 0 || tl >= techLevels.Count)
+			if (!check(tl))
 				return float.NaN;
 			return techLevels[tl].getMass(thrust);
 		}
 		public float getCost(int tl, float thrust, int ignitions)
 		{
-			if (tl < 0 || tl >= techLevels.Count)
+			if (!check(tl))
 				return float.NaN;
 			return techLevels[tl].getCost(thrust, ignitions);
 		}
 		public FloatCurve getIsp(int tl)
 		{
-			if (tl < 0 || tl >= techLevels.Count)
+			if (!check(tl))
 				return null;
 			return techLevels[tl].isp;
 		}
@@ -116,19 +121,19 @@ namespace SPEngine
 		}
 		public float getBurnTime(int tl)
 		{
-			if (tl < 0 || tl >= techLevels.Count)
+			if (!check(tl))
 				return float.NaN;
 			return techLevels[tl].burnTime;
 		}
 		public string getTechRequired(int tl)
 		{
-			if (tl < 0 || tl >= techLevels.Count)
+			if (!check(tl))
 				return null;
 			return techLevels[tl].techRequired;
 		}
 		public float getScaleFactor(int tl, float thrust)
 		{
-			if (tl < 0 || tl >= techLevels.Count)
+			if (!check(tl))
 				return float.NaN;
 			return techLevels[tl].getScaleFactor(thrust);
 		}

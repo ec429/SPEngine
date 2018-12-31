@@ -6,7 +6,7 @@ namespace SPEngine
 	public class Design
 	{
 		public string name; // user-provided name of this point-design
-		private char familyLetter;
+		public char familyLetter;
 		public Family family;
 		public int tl;
 		public float thrust;
@@ -16,7 +16,6 @@ namespace SPEngine
 		public Design(ConfigNode node)
 		{
 			Load(node);
-			tooled = true;
 		}
 
 		public Design(string _name, Family _family, int _tl, float _thrust, int _ignitions)
@@ -26,6 +25,7 @@ namespace SPEngine
 			tl = _tl;
 			thrust = _thrust;
 			ignitions = _ignitions;
+			familyLetter = family.letter;
 		}
 		public Design(Family _family, int _tl)
 		{
@@ -34,6 +34,7 @@ namespace SPEngine
 			tl = _tl;
 			thrust = family.getMaxThrust(tl);
 			ignitions = family.getMaxIgnitions(tl);
+			familyLetter = family.letter;
 		}
 
 		public Design(Design old, int newTL) // upgrade of an existing design
@@ -45,6 +46,25 @@ namespace SPEngine
 			thrust = family.getMaxThrust(tl) * tf;
 			int ni = family.getMaxIgnitions(old.tl) - old.ignitions;
 			ignitions = family.getMaxIgnitions(tl) - ni;
+			familyLetter = family.letter;
+		}
+
+		public enum Constraint { OK, BROKEN, TECHLEVEL, MINTHRUST, MAXTHRUST, IGNITIONS };
+
+		public Constraint check { // is this Design within the Family's constraints?
+			get {
+				if (broken)
+					return Constraint.BROKEN;
+				if (!family.check(tl))
+					return Constraint.TECHLEVEL;
+				if (thrust < family.getMinThrust(tl))
+					return Constraint.MINTHRUST;
+				if (thrust > family.getMaxThrust(tl))
+					return Constraint.MAXTHRUST;
+				if (ignitions < 0 || ignitions > family.getMaxIgnitions(tl))
+					return Constraint.IGNITIONS;
+				return Constraint.OK;
+			}
 		}
 
 		public bool broken {
@@ -114,13 +134,16 @@ namespace SPEngine
 		{
 			name = node.GetValue("name");
 			familyLetter = node.GetValue("family")[0];
-			if (Core.Instance.families.ContainsKey(familyLetter))
+			if (Core.Instance.families.ContainsKey(familyLetter)) {
 				family = Core.Instance.families[familyLetter];
-			else
+			} else {
+				Logging.LogFormat("Failed to load family '{0}'", familyLetter);
 				family = null;
+			}
 			tl = int.Parse(node.GetValue("tl"));
 			thrust = float.Parse(node.GetValue("thrust"));
 			ignitions = int.Parse(node.GetValue("ignitions"));
+			tooled = bool.Parse(node.GetValue("tooled"));
 		}
 
 		public void Save(ConfigNode node)
@@ -130,6 +153,7 @@ namespace SPEngine
 			node.AddValue("tl", tl.ToString());
 			node.AddValue("thrust", thrust.ToString());
 			node.AddValue("ignitions", ignitions.ToString());
+			node.AddValue("tooled", tooled.ToString());
 		}
 	}
 }
