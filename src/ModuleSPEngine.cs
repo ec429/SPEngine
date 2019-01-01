@@ -95,8 +95,12 @@ namespace SPEngine
 		{
 			engineConfig.configs.Clear();
 			ConfigNode node = new ConfigNode();
-			/* Need a unique name for this engine, so that we won't confuse TestFlight too much */
-			string configName = String.Format("SPEngine-{0}-{1}", design.familyLetter, design.name);
+			/* Name to match our TestFlight configs.
+			 * Per TechLevel, not per Design, because the latter
+			 * would mean constructing TestFlight configs at run-
+			 * time which I'd rather not have to do.
+			 */
+			string configName = String.Format("SPEngine-{0}-{1}", design.familyLetter, design.tl);
 			node.AddValue("name", configName);
 			node.AddValue("maxThrust", design.thrust.ToString());
 			node.AddValue("minThrust", design.thrust.ToString());

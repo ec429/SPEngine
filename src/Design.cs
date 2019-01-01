@@ -196,13 +196,6 @@ namespace SPEngine
 				return family.getIspVac(tl);
 			}
 		}
-		public float burnTime {
-			get {
-				if (broken)
-					return 0;
-				return family.getBurnTime(tl);
-			}
-		}
 		public string techRequired {
 			get {
 				if (broken)

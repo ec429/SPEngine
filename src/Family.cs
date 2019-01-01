@@ -16,7 +16,6 @@ namespace SPEngine
 		public float mass;
 		public float cost;
 		public float toolCost;
-		public float burnTime;
 		public bool ullage = true;
 		public bool pressureFed = false;
 		public List<ConfigNode> propellants;
@@ -63,13 +62,6 @@ namespace SPEngine
 				Logging.LogFormat("Bad toolCost {0}", node.GetValue("toolCost"));
 				throw;
 			}
-			try {
-				burnTime = float.Parse(node.GetValue("burnTime"));
-			} catch {
-				Logging.LogFormat("Bad burnTime {0}", node.GetValue("burnTime"));
-				throw;
-			}
-			/* TODO rest of reliability numbers */
 			if (node.HasValue("ullage")) {
 				try {
 					ullage = bool.Parse(node.GetValue("ullage"));
@@ -263,12 +255,6 @@ namespace SPEngine
 		public float getIspVac (int tl)
 		{
 			return getIsp(tl).Evaluate(0.0f);
-		}
-		public float getBurnTime(int tl)
-		{
-			if (!check(tl))
-				return float.NaN;
-			return techLevels[tl].burnTime;
 		}
 		public string getTechRequired(int tl)
 		{
