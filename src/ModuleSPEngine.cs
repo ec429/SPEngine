@@ -103,7 +103,7 @@ namespace SPEngine
 			string configName = String.Format("SPEngine-{0}-{1}", design.familyLetter, design.tl);
 			node.AddValue("name", configName);
 			node.AddValue("maxThrust", design.thrust.ToString());
-			node.AddValue("minThrust", design.thrust.ToString());
+			node.AddValue("minThrust", (design.thrust * design.minThrottle).ToString());
 			node.AddValue("ignitions", design.ignitions.ToString());
 			ConfigNode ispn = new ConfigNode();
 			design.isp.Save(ispn);
@@ -121,7 +121,7 @@ namespace SPEngine
 		private void applyConfigStock()
 		{
 			engine.maxThrust = design.thrust;
-			engine.minThrust = engine.maxThrust; // Assume no throttling for now.  Later it'll go in the Family
+			engine.minThrust = design.thrust * design.minThrottle;
 			engine.atmosphereCurve = design.isp;
 			part.scaleFactor = initialScale * design.scaleFactor;
 			/* Have to recalculate some values, because ModuleEngines is weird like that */

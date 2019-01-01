@@ -126,6 +126,13 @@ namespace SPEngine
 			}
 		}
 
+		public float minThrottle {
+			get {
+				if (broken)
+					return float.NaN;
+				return family.getMinThrottle(tl);
+			}
+		}
 		public float mass {
 			get {
 				if (broken)

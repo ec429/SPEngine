@@ -11,6 +11,7 @@ namespace SPEngine
 		public string techRequired;
 		public List<string> entryCosts;
 		public float maxThrust;
+		public float minThrottle = 1f;
 		public FloatCurve isp;
 		public int maxIgnitions;
 		public float mass;
@@ -30,6 +31,14 @@ namespace SPEngine
 			} catch {
 				Logging.LogFormat("Bad maxThrust {0}", node.GetValue("maxThrust"));
 				throw;
+			}
+			if (node.HasValue("minThrottle")) {
+				try {
+					minThrottle = float.Parse(node.GetValue("minThrottle"));
+				} catch {
+					Logging.LogFormat("Bad minThrottle {0}", node.GetValue("minThrottle"));
+					throw;
+				}
 			}
 			try {
 				isp = new FloatCurve();
@@ -202,9 +211,19 @@ namespace SPEngine
 				return float.NaN;
 			return techLevels[tl].maxThrust;
 		}
+		/* This is the minimum maxThrust allowed for a Design.
+		 * The actual minThrust of the Design will be the Design's own
+		 * maxThrust multipled by our getMinThrottle(tl), below.
+		 */
 		public float getMinThrust(int tl)
 		{
 			return getMaxThrust(tl) * minTf;
+		}
+		public float getMinThrottle(int tl)
+		{
+			if (!check(tl))
+				return float.NaN;
+			return techLevels[tl].minThrottle;
 		}
 		public int getMaxIgnitions(int tl)
 		{
