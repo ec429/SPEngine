@@ -62,6 +62,7 @@ The plugin depends directly on RealFuels.  The part configs generally work by
  * D-class (AJ10): SXT
  * G-class (Agena): VenStockRevamp
  * J-class (J-2): SXT
+ * M-class (M-1): FASA
 Also, TestFlight is recommended (but not required), as increased burn-time
  limits and improved reliability are often the biggest upgrades from one tech
  level to the next.
