@@ -5,7 +5,7 @@ Variables: size (affects mass, thrust, cost), nIgnitions (affects cost), others?
 Once you've fixed a design, you can upgrade it as you unlock techs.
 
 Classes:
-A: Alcohol/LOx atmospheric engine.  Cheap'n'easy for the low TLs.  Examples include A4, A6, RD100, XLR11 (Bell X-1).
+A: Alcohol/LOx atmospheric engine.  Cheap'n'easy for the low TLs.  Examples include A4, A6, RD-100, XLR11 (Bell X-1).
 B: Small hypergolic sustainer engine.  Examples include Aerobee and very early AJ-10s.
 C: Small methalox vacuum engine.  E.g. RL10-CH₄.
 D: Pressure-fed hypergolic vacuum engine.  Examples include AJ10 family (Able, Delta, Apollo SPS...).
@@ -15,13 +15,13 @@ G: Pump-fed hypergolic vacuum engine.  Examples include Agena (Bell XLR81).
 H: Staged-combustion hydrolox sustainer engine.  E.g. RS25.
 J: Large hydrolox vacuum engine.  E.g. J-2.
 K: Kerolox atmospheric engine (not huge).  Examples include X405, LR79/89/H-1, LR87 (Titan I), Merlin1.
-L: Kerolox sustainer engine.  Examples include LR105, RD107.
+L: Kerolox sustainer engine.  Examples include LR105, RD-108.
 M: Huge hydrolox vacuum engine.  E.g. M-1.
 N: Large staged-combustion kerolox engine.  E.g. NK series.
-P: Staged-combustion hypergolic engine.  E.g. Proton (RD270 etc.).
+P: Staged-combustion hypergolic engine.  E.g. Proton (RD-270 etc.).
 Q: Throttleable small hydrolox vacuum engine.  Based on RL10 deep-throttling projects (e.g. for Lunex).
 R: Small hydrolox vacuum engine.  E.g. RL10.
-S: Small staged-combustion kerolox engine.  E.g. RD58.
+S: Small staged-combustion kerolox engine.  E.g. RD-58.
 T: Large hypergolic atmospheric engine.  E.g. LR87 (Titan II onwards).
 U: Staged-combustion methalox sustainer engine.  E.g. Raptor, BE-4.
 V: Kerolox vacuum engine.  E.g. LR91 (Titan I), Merlin1Vac.
