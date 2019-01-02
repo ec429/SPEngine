@@ -51,7 +51,20 @@ In a race, developing the right order of engine designs might be the most
  (cheaper, so fewer BP), but then you have a smaller AJ10-27 for your upper
  stages, so you have to have more in the cluster on your first orbital shot,
  and Agathorn eats you.
- 
+
+What are its dependencies?
+--------------------------
+
+The plugin depends directly on RealFuels.  The part configs generally work by
+ cloning engines from Realism Overhaul; in some cases additional part mods are
+ needed:
+ * A-class (A-4): Taerobee
+ * D-class (AJ10): SXT
+ * G-class (Agena): VenStockRevamp
+Also, TestFlight is recommended (but not required), as increased burn-time
+ limits and improved reliability are often the biggest upgrades from one tech
+ level to the next.
+
 Where do I report bugs?
 -----------------------
 
