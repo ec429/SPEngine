@@ -12,6 +12,7 @@ namespace SPEngine.UI
 		int inputTL = 1;
 		Design currentDesign;
 		Guid confirmTool = Guid.Empty;
+		Guid renaming = Guid.Empty;
 		bool showAll = false;
 		public ConfigWindow(ModuleSPEngine m) :
 			base(new Guid("41f4fc6f-06b4-4d6c-9774-908f46beffc0"),
@@ -44,10 +45,18 @@ namespace SPEngine.UI
 						continue;
 					GUILayout.BeginHorizontal();
 					try {
-						if (GUILayout.Button(d.name)) {
-							module.DesignGuid = d.guid;
-							module.applyConfig();
-							fetchDesign();
+						if (renaming == d.guid) {
+							if (!GUILayout.Toggle(true, "*"))
+								renaming = Guid.Empty;
+							d.name = GUILayout.TextField(d.name, GUILayout.Width(90));
+						} else {
+							if (GUILayout.Toggle(false, "*"))
+								renaming = d.guid;
+							if (GUILayout.Button(d.name)) {
+								module.DesignGuid = d.guid;
+								module.applyConfig();
+								fetchDesign();
+							}
 						}
 						GUILayout.Label(String.Format(": {0:0.##}kN, {1} ignitions; TL {2}.  Mass {3:0.###}, cost {4:0.#} {5}{6}", d.thrust, d.ignitions, d.tl + 1, d.mass, d.cost, d.ullage ? "[U]" : "", d.pressureFed ? "[P]" : ""));
 						if (!d.tooled) {
@@ -70,8 +79,6 @@ namespace SPEngine.UI
 								GUILayout.Label(String.Format("Upgrade: requires {0}", d.family.getTechRequired(d.tl + 1)));
 							} else if (d.tl + 1 >= d.family.unlocked) {
 								GUILayout.Label(String.Format("Upgrade: unlock TL {0}", d.tl + 2));
-							} else if (currentDesign.name.Equals("")) {
-								GUILayout.Label("Upgrade: Choose name");
 							} else {
 								if (GUILayout.Button("Upgrade")) {
 									Design up = new Design(d, d.tl + 1);
@@ -91,6 +98,7 @@ namespace SPEngine.UI
 										if (!Core.Instance.library.designs.ContainsKey(currentDesign.guid)) {
 											Core.Instance.library.AddDesign(up);
 											d.upgradeTo = up.guid;
+											renaming = up.guid; // select this design for renaming
 											module.DesignGuid = up.guid;
 											module.applyConfig();
 											/* Notify the editor that we changed the module's Design */
