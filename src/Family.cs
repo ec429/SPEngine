@@ -152,6 +152,7 @@ namespace SPEngine
 		public char letter = '?';
 		public string description;
 		public float minTf = 0.2f;
+		public int minIgnitions = 0;
 		public List<TechLevel> techLevels = new List<TechLevel>();
 		public int unlocked = 0;
 		public Design baseDesign;
@@ -163,6 +164,8 @@ namespace SPEngine
 				description = node.GetValue("description");
 				if (node.HasValue("minTf"))
 					minTf = float.Parse(node.GetValue("minTf"));
+				if (node.HasValue("minIgnitions"))
+					minIgnitions = int.Parse(node.GetValue("minIgnitions"));
 				foreach (ConfigNode tn in node.GetNodes("TechLevel"))
 					techLevels.Add(new TechLevel(tn));
 				baseDesign = new Design(this, 0);

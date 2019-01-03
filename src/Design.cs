@@ -94,7 +94,7 @@ namespace SPEngine
 					return Constraint.MINTHRUST;
 				if (thrust > family.getMaxThrust(tl))
 					return Constraint.MAXTHRUST;
-				if (ignitions < 0 || ignitions > family.getMaxIgnitions(tl))
+				if (ignitions < family.minIgnitions || ignitions > family.getMaxIgnitions(tl))
 					return Constraint.IGNITIONS;
 				return Constraint.OK;
 			}

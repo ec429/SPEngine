@@ -87,7 +87,12 @@ namespace SPEngine.UI
 			for (int tl = 0; tl < f.techLevels.Count; tl++) {
 				GUILayout.BeginHorizontal();
 				try {
-					GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions, {3:0.#}s Isp(vac), {4:0.#}s ISP(atm), mass {5:0.###}t, cost {6:0.#}f {7}{8}", tl, f.getMaxThrust(tl), f.getMaxIgnitions(tl), f.getIspVac(tl), f.getIspAtmo(tl), f.getMaxMass(tl), f.getMaxCost(tl), f.getUllage(tl) ? "[U]" : "", f.getPressureFed(tl) ? "[P]" : ""));
+					string ignitionString;
+					if (f.minIgnitions == f.getMaxIgnitions(tl))
+						ignitionString = f.minIgnitions.ToString();
+					else
+						ignitionString = String.Format("{0}-{1}", f.minIgnitions, f.getMaxIgnitions(tl));
+					GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions, {3:0.#}s Isp(vac), {4:0.#}s ISP(atm), mass {5:0.###}t, cost {6:0.#}f {7}{8}", tl, f.getMaxThrust(tl), ignitionString, f.getIspVac(tl), f.getIspAtmo(tl), f.getMaxMass(tl), f.getMaxCost(tl), f.getUllage(tl) ? "[U]" : "", f.getPressureFed(tl) ? "[P]" : ""));
 					if (!f.haveTechRequired(tl)) {
 						GUILayout.Label(String.Format("Requires {0}", f.getTechRequired(tl)));
 					} else if (tl >= f.unlocked) {
