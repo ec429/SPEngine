@@ -13,9 +13,6 @@ namespace SPEngine.UI
 		public String Tooltip { get; set; }
 		public bool Enabled = false;
 		public static GUIStyle Frame = new GUIStyle(HighLogic.Skin.window);
-		public const double TooltipDelay = 0.5;
-		private double mLastTime;
-		private double mTooltipTimer;
 		private readonly Guid mGuid;
 		public static Dictionary<Guid, AbstractWindow> Windows = new Dictionary<Guid, AbstractWindow>();
 		public static GUIStyle headingStyle, boldBtnStyle, boldLblStyle;
@@ -131,25 +128,12 @@ namespace SPEngine.UI
 			{
 				if (Tooltip != "")
 				{
-					if (mTooltipTimer > TooltipDelay)
-					{
-						var pop = GUI.skin.box.alignment;
-						var width = GUI.skin.box.CalcSize(new GUIContent(Tooltip)).x;
-						GUI.skin.box.alignment = TextAnchor.MiddleLeft;
-						GUI.Box(new Rect(Position.x, Position.y + Position.height + 10, width, 28), Tooltip);
-						GUI.skin.box.alignment = pop;
-					}
-					else
-					{
-						mTooltipTimer += Time.time - mLastTime;
-						mLastTime = Time.time;
-					}
+					var pop = GUI.skin.box.alignment;
+					var width = GUI.skin.box.CalcSize(new GUIContent(Tooltip)).x;
+					GUI.skin.box.alignment = TextAnchor.MiddleLeft;
+					GUI.Box(new Rect(Position.x, Position.y + Position.height + 10, width, 28), Tooltip);
+					GUI.skin.box.alignment = pop;
 				}
-				else
-				{
-					mTooltipTimer = 0.0;
-				}
-				mLastTime = Time.time;
 
 				// Position of the window changed?
 				if (!backupPosition.Equals(Position))

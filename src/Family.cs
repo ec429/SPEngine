@@ -274,6 +274,10 @@ namespace SPEngine
 		{
 			return getIsp(tl).Evaluate(1.0f);
 		}
+		public float getMaxThrustAtmo(int tl)
+		{
+			return getMaxThrust(tl) * getIspAtmo(tl) / getIspVac(tl);
+		}
 		public float getIspVac (int tl)
 		{
 			return getIsp(tl).Evaluate(0.0f);

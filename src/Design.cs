@@ -210,6 +210,13 @@ namespace SPEngine
 				return family.getIspAtmo(tl);
 			}
 		}
+		public float thrustAtmo {
+			get {
+				if (broken)
+					return float.NaN;
+				return thrust * ispAtmo / ispVac;
+			}
+		}
 		public float ispVac {
 			get {
 				if (broken)

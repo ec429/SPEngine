@@ -43,7 +43,12 @@ namespace SPEngine.UI
 						ignitionString = f.minIgnitions.ToString();
 					else
 						ignitionString = String.Format("{0}-{1}", f.minIgnitions, f.getMaxIgnitions(tl));
-					GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions, {3:0.#}s Isp(vac), {4:0.#}s ISP(atm), mass {5:0.###}t, cost {6:0.#}f {7}{8}", tl, f.getMaxThrust(tl), ignitionString, f.getIspVac(tl), f.getIspAtmo(tl), f.getMaxMass(tl), f.getMaxCost(tl), f.getUllage(tl) ? "[U]" : "", f.getPressureFed(tl) ? "[P]" : ""));
+					string details = String.Format("Isp(vac)={0:0.#}s; Isp(SL)={1:0.#}s, SLT={2:0.##}kN; mass={3:0.###}t; cost={4:0.#}f", f.getIspVac(tl), f.getIspAtmo(tl), f.getMaxThrustAtmo(tl), f.getMaxMass(tl), f.getMaxCost(tl));
+					GUILayout.Label(new GUIContent(String.Format("{0}: {1:0.##}kN, {2} ignition{3}. ", tl + 1, f.getMaxThrust(tl), ignitionString, ignitionString.Equals("1") ? "" : "s"), details));
+					if (f.getUllage(tl))
+						GUILayout.Label(ullageContent);
+					if (f.getPressureFed(tl))
+						GUILayout.Label(pressureFedContent);
 					if (!f.haveTechRequired(tl)) {
 						GUILayout.Label(String.Format("Requires {0}", f.getTechRequired(tl)));
 					} else if (tl >= f.unlocked) {

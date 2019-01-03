@@ -39,21 +39,26 @@ namespace SPEngine.UI
 		{
 			GUILayout.BeginHorizontal();
 			try {
+				Family f = currentDesign.family;
 				inputName = GUILayout.TextField(inputName, GUILayout.Width(90));
 				inputThrust = GUILayout.TextField(inputThrust, GUILayout.Width(50));
-				GUILayout.Label("kN, ");
+				GUILayout.Label(new GUIContent("kN, ", String.Format("min {0:0.##}kN, max {1:0.##}kN; SLT={2:0.##}kN", f.getMinThrust(currentDesign.tl), f.getMaxThrust(currentDesign.tl), currentDesign.thrustAtmo)));
 				inputIgnitions = GUILayout.TextField(inputIgnitions, GUILayout.Width(30));
 				currentDesign.name = inputName;
 				float.TryParse(inputThrust, out currentDesign.thrust);
 				int.TryParse(inputIgnitions, out currentDesign.ignitions);
-				GUILayout.Label("ignitions.  TL ");
+				GUILayout.Label(new GUIContent("ignitions.  ", String.Format("min {0}, max {1}", f.minIgnitions, f.getMaxIgnitions(currentDesign.tl))));
 				if (GUILayout.Button("-") && inputTL > 1)
 					inputTL -= 1;
-				GUILayout.Label(inputTL.ToString());
+				GUILayout.Label(String.Format("TL {0}", inputTL));
 				if (GUILayout.Button("+") && inputTL < currentDesign.family.techLevels.Count)
 					inputTL += 1;
 				currentDesign.tl = inputTL - 1;
-				GUILayout.Label(String.Format("  Mass {0:0.###}, cost {1:0.#} {2}{3}", currentDesign.mass, currentDesign.tooledCost, currentDesign.ullage ? "[U]" : "", currentDesign.pressureFed ? "[P]" : ""));
+				GUILayout.Label(String.Format("  Mass {0:0.###}, cost {1:0.#}", currentDesign.mass, currentDesign.tooledCost));
+				if (currentDesign.ullage)
+					GUILayout.Label(ullageContent);
+				if (currentDesign.pressureFed)
+					GUILayout.Label(pressureFedContent);
 				Design.Constraint check = currentDesign.check;
 				switch (check) {
 				case Design.Constraint.OK:

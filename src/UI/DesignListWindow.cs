@@ -9,6 +9,11 @@ namespace SPEngine.UI
 		protected Guid confirmTool = Guid.Empty;
 		protected Guid renaming = Guid.Empty;
 		protected bool showAll = false;
+		private GUIContent renameBtnContent = new GUIContent("", "Rename this design");
+		private GUIContent deleteBtnContent = new GUIContent("X", "Delete this design");
+		private GUIContent undeleteBtnContent = new GUIContent("#", "Un-delete this design");
+		protected GUIContent ullageContent = new GUIContent("[U]", "Engine is subject to ullage");
+		protected GUIContent pressureFedContent = new GUIContent("[P]", "Engine is pressure-fed");
 
 		public DesignListWindow(Guid id, String title, Rect position) : base(id, title, position)
 		{
@@ -24,16 +29,21 @@ namespace SPEngine.UI
 					GUILayout.BeginHorizontal();
 					try {
 						if (renaming == d.guid) {
-							if (!GUILayout.Toggle(true, "*"))
+							if (!GUILayout.Toggle(true, renameBtnContent))
 								renaming = Guid.Empty;
 							d.name = GUILayout.TextField(d.name, GUILayout.Width(90));
 						} else {
-							if (GUILayout.Toggle(false, "*"))
+							if (GUILayout.Toggle(false, renameBtnContent))
 								renaming = d.guid;
 							if (GUILayout.Button(d.name))
 								select = d;
 						}
-						GUILayout.Label(String.Format(": {0:0.##}kN, {1} ignitions; TL {2}.  Mass {3:0.###}, cost {4:0.#} {5}{6}", d.thrust, d.ignitions, d.tl + 1, d.mass, d.cost, d.ullage ? "[U]" : "", d.pressureFed ? "[P]" : ""));
+						string details = String.Format("Isp(vac)={0:0.#}s; Isp(SL)={1:0.#}s, SLT={2:0.##kN}; mass={3:0.###}t; cost={4:0.#}f", d.ispVac, d.ispAtmo, d.thrustAtmo, d.mass, d.cost);
+						GUILayout.Label(new GUIContent(String.Format(": {0:0.##}kN, {1} ignition{2}; TL {3}. ", d.thrust, d.ignitions, d.ignitions == 1 ? "" : "s", d.tl + 1), details));
+						if (d.ullage)
+							GUILayout.Label(ullageContent);
+						if (d.pressureFed)
+							GUILayout.Label(pressureFedContent);
 						if (!d.tooled) {
 							if (confirmTool == d.guid) {
 								GUILayout.Label("Tool:");
@@ -77,7 +87,13 @@ namespace SPEngine.UI
 								}
 							}
 						}
-						d.hidden = GUILayout.Toggle(d.hidden, "X");
+						if (d.hidden) {
+							if (GUILayout.Button(undeleteBtnContent))
+								d.hidden = false;
+						} else {
+							if (GUILayout.Button(deleteBtnContent))
+								d.hidden = true;
+						}
 						GUILayout.FlexibleSpace();
 					} finally {
 						GUILayout.EndHorizontal();
