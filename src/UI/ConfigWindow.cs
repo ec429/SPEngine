@@ -12,6 +12,7 @@ namespace SPEngine.UI
 		int inputTL = 1;
 		Design currentDesign;
 		string confirmTool = null;
+		bool showAll = false;
 		public ConfigWindow(ModuleSPEngine m) :
 			base(new Guid("41f4fc6f-06b4-4d6c-9774-908f46beffc0"),
 			     "SPEngine Config", new Rect(100, 100, 615, 320))
@@ -39,6 +40,8 @@ namespace SPEngine.UI
 		{
 			foreach (Design d in Core.Instance.library.designs.Values)
 				if (d.family.letter == module.familyLetter[0]) {
+					if (d.hidden && !showAll)
+						continue;
 					GUILayout.BeginHorizontal();
 					try {
 						if (GUILayout.Button(d.name)) {
@@ -100,6 +103,7 @@ namespace SPEngine.UI
 								}
 							}
 						}
+						d.hidden = GUILayout.Toggle(d.hidden, "X");
 						GUILayout.FlexibleSpace();
 					} finally {
 						GUILayout.EndHorizontal();
@@ -125,10 +129,16 @@ namespace SPEngine.UI
 				Design.Constraint check = currentDesign.check;
 				switch (check) {
 				case Design.Constraint.OK:
+					Design dup = currentDesign.checkDuplicate();
 					if (currentDesign.name.Equals("")) {
 						GUILayout.Label("Choose name");
-					} else if (currentDesign.checkDuplicate() != null) {
-						GUILayout.Label(String.Format("Duplicates {0}", currentDesign.checkDuplicate().name));
+					} else if (dup != null) {
+						if (dup.hidden) {
+							if (GUILayout.Button(String.Format("Duplicates {0}", dup.name)))
+								dup.hidden = false;
+						} else {
+							GUILayout.Label(String.Format("Duplicates {0}", dup.name));
+						}
 					} else if (GUILayout.Button("Apply")) {
 						Core.Instance.library.AddDesign(currentDesign);
 						module.DesignGuid = currentDesign.guid;
@@ -166,6 +176,7 @@ namespace SPEngine.UI
 		public override void Window(int id)
 		{
 			GUILayout.BeginVertical(GUILayout.Width(595));
+			showAll = GUILayout.Toggle(showAll, "Show deleted designs");
 			try {
 				GUILayout.BeginHorizontal();
 				try {

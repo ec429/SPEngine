@@ -9,6 +9,7 @@ namespace SPEngine.UI
 		Vector2 familyScroll, designScroll;
 		char showingFamily = '\0';
 		string confirmTool = null;
+		bool showAll = false;
 		public MasterWindow() :
 			base(new Guid("4607f309-0fc8-4c8a-bd7b-d214d0174bc8"),
 			     "SPEngine", new Rect(100, 100, 615, 320))
@@ -37,6 +38,8 @@ namespace SPEngine.UI
 		{
 			foreach (Design d in Core.Instance.library.designs.Values)
 				if (d.family.letter == showingFamily) {
+					if (d.hidden && !showAll)
+						continue;
 					GUILayout.BeginHorizontal();
 					try {
 						GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions; TL {3}.  Mass {4:0.###}t, cost {5:0.#}f {6}{7}", d.name, d.thrust, d.ignitions, d.tl + 1, d.mass, d.cost, d.ullage ? "[U]" : "", d.pressureFed ? "[P]" : ""));
@@ -74,6 +77,7 @@ namespace SPEngine.UI
 							GUILayout.Label(d.check.ToString());
 							break;
 						}
+						d.hidden = GUILayout.Toggle(d.hidden, "X");
 						GUILayout.FlexibleSpace();
 					} finally {
 						GUILayout.EndHorizontal();
@@ -126,6 +130,7 @@ namespace SPEngine.UI
 						GUILayout.EndScrollView();
 					}
 				} else {
+					showAll = GUILayout.Toggle(showAll, "Show deleted designs");
 					GUILayout.BeginHorizontal();
 					try {
 						Family f = Core.Instance.families[showingFamily];

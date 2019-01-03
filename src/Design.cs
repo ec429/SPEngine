@@ -19,6 +19,7 @@ namespace SPEngine
 		private Design existingDesign = null;
 		private int generation = -1;
 		private Design checkedDesign = null;
+		public bool hidden = false;
 
 		public Design(ConfigNode node)
 		{
@@ -278,6 +279,8 @@ namespace SPEngine
 				upgradeFrom = new Guid(node.GetValue("upgradeFrom"));
 			if (node.HasValue("upgradeTo"))
 				upgradeTo = new Guid(node.GetValue("upgradeTo"));
+			if (node.HasValue("hidden"))
+				hidden = bool.Parse(node.GetValue("hidden"));
 		}
 
 		public void Save(ConfigNode node)
@@ -293,6 +296,7 @@ namespace SPEngine
 				node.AddValue("upgradeFrom", upgradeFrom);
 			if (upgradeTo != Guid.Empty)
 				node.AddValue("upgradeTo", upgradeTo);
+			node.AddValue("hidden", hidden.ToString());
 		}
 	}
 }
