@@ -11,7 +11,7 @@ namespace SPEngine.UI
 		string inputThrust, inputIgnitions, inputName;
 		int inputTL = 1;
 		Design currentDesign;
-		string confirmTool = null;
+		Guid confirmTool = Guid.Empty;
 		bool showAll = false;
 		public ConfigWindow(ModuleSPEngine m) :
 			base(new Guid("41f4fc6f-06b4-4d6c-9774-908f46beffc0"),
@@ -51,15 +51,15 @@ namespace SPEngine.UI
 						}
 						GUILayout.Label(String.Format(": {0:0.##}kN, {1} ignitions; TL {2}.  Mass {3:0.###}, cost {4:0.#} {5}{6}", d.thrust, d.ignitions, d.tl + 1, d.mass, d.cost, d.ullage ? "[U]" : "", d.pressureFed ? "[P]" : ""));
 						if (!d.tooled) {
-							if (confirmTool == d.name) {
+							if (confirmTool == d.guid) {
 								GUILayout.Label("Tool:");
 								if (GUILayout.Button("OK"))
 									d.Tool();
 								else if (GUILayout.Button("CANCEL"))
-									confirmTool = null;
+									confirmTool = Guid.Empty;
 							} else {
 								if (GUILayout.Button("TOOL"))
-									confirmTool = d.name;
+									confirmTool = d.guid;
 							}
 							GUILayout.Label(String.Format("{0:0.#}f", d.toolCost));
 						}

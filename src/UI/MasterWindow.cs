@@ -8,7 +8,7 @@ namespace SPEngine.UI
 	{
 		Vector2 familyScroll, designScroll;
 		char showingFamily = '\0';
-		string confirmTool = null;
+		Guid confirmTool = Guid.Empty;
 		bool showAll = false;
 		public MasterWindow() :
 			base(new Guid("4607f309-0fc8-4c8a-bd7b-d214d0174bc8"),
@@ -25,7 +25,7 @@ namespace SPEngine.UI
 				try {
 					if (GUILayout.Button(f.letter.ToString(), boldBtnStyle, GUILayout.ExpandWidth(false))) {
 						showingFamily = f.letter;
-						confirmTool = null;
+						confirmTool = Guid.Empty;
 					}
 					GUILayout.Label(f.description);
 				} finally {
@@ -46,15 +46,15 @@ namespace SPEngine.UI
 						switch (d.check) {
 						case Design.Constraint.OK:
 							if (!d.tooled) {
-								if (confirmTool == d.name) {
+								if (confirmTool == d.guid) {
 									GUILayout.Label("Tool:");
 									if (GUILayout.Button("OK"))
 										d.Tool();
 									else if (GUILayout.Button("CANCEL"))
-										confirmTool = null;
+										confirmTool = Guid.Empty;
 								} else {
 									if (GUILayout.Button("TOOL"))
-										confirmTool = d.name;
+										confirmTool = d.guid;
 								}
 								GUILayout.Label(String.Format("{0:0.#}f", d.toolCost));
 							}
