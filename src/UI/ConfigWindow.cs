@@ -62,7 +62,7 @@ namespace SPEngine.UI
 						}
 						if (d.tl + 1 < d.family.techLevels.Count) {
 							if (d.upgradeTo != Guid.Empty) {
-								GUILayout.Label(String.Format("Upgraded: {0}", d.upgradeTo));
+								GUILayout.Label(String.Format("Upgraded: {0}", d.upgradeToName));
 							} else if (!d.family.haveTechRequired(d.tl + 1)) {
 								GUILayout.Label(String.Format("Upgrade: requires {0}", d.family.getTechRequired(d.tl + 1)));
 							} else if (d.tl + 1 >= d.family.unlocked) {

@@ -153,6 +153,15 @@ namespace SPEngine
 				return Core.Instance.library.designs[upgradeFrom];
 			}
 		}
+		public string upgradeToName {
+			get {
+				if (upgradeTo == Guid.Empty)
+					return null;
+				if (!Core.Instance.library.designs.ContainsKey(upgradeTo))
+					return null;
+				return Core.Instance.library.designs[upgradeTo].name;
+			}
+		}
 		public float tooledCost {
 			get {
 				if (broken)
