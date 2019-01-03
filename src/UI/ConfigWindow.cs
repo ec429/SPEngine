@@ -4,16 +4,13 @@ using UnityEngine;
 
 namespace SPEngine.UI
 {
-	public class ConfigWindow : AbstractWindow
+	public class ConfigWindow : DesignListWindow
 	{
 		Vector2 designScroll;
 		ModuleSPEngine module;
 		string inputThrust, inputIgnitions, inputName;
 		int inputTL = 1;
 		Design currentDesign;
-		Guid confirmTool = Guid.Empty;
-		Guid renaming = Guid.Empty;
-		bool showAll = false;
 		public ConfigWindow(ModuleSPEngine m) :
 			base(new Guid("41f4fc6f-06b4-4d6c-9774-908f46beffc0"),
 			     "SPEngine Config", new Rect(100, 100, 615, 320))
@@ -29,94 +26,17 @@ namespace SPEngine.UI
 
 		private void fetchDesign()
 		{
-			inputName = module.DesignName;
 			if (module.design != null) {
+				inputName = module.design.name;
 				inputThrust = module.design.thrust.ToString();
 				inputIgnitions = module.design.ignitions.ToString();
 				inputTL = module.design.tl + 1;
+				currentDesign = new Design(module.design);
 			}
 		}
 
-		private void designList()
+		private void designInput()
 		{
-			foreach (Design d in Core.Instance.library.designs.Values)
-				if (d.family.letter == module.familyLetter[0]) {
-					if (d.hidden && !showAll)
-						continue;
-					GUILayout.BeginHorizontal();
-					try {
-						if (renaming == d.guid) {
-							if (!GUILayout.Toggle(true, "*"))
-								renaming = Guid.Empty;
-							d.name = GUILayout.TextField(d.name, GUILayout.Width(90));
-						} else {
-							if (GUILayout.Toggle(false, "*"))
-								renaming = d.guid;
-							if (GUILayout.Button(d.name)) {
-								module.DesignGuid = d.guid;
-								module.applyConfig();
-								fetchDesign();
-							}
-						}
-						GUILayout.Label(String.Format(": {0:0.##}kN, {1} ignitions; TL {2}.  Mass {3:0.###}, cost {4:0.#} {5}{6}", d.thrust, d.ignitions, d.tl + 1, d.mass, d.cost, d.ullage ? "[U]" : "", d.pressureFed ? "[P]" : ""));
-						if (!d.tooled) {
-							if (confirmTool == d.guid) {
-								GUILayout.Label("Tool:");
-								if (GUILayout.Button("OK"))
-									d.Tool();
-								else if (GUILayout.Button("CANCEL"))
-									confirmTool = Guid.Empty;
-							} else {
-								if (GUILayout.Button("TOOL"))
-									confirmTool = d.guid;
-							}
-							GUILayout.Label(String.Format("{0:0.#}f", d.toolCost));
-						}
-						if (d.tl + 1 < d.family.techLevels.Count) {
-							if (d.upgradeTo != Guid.Empty) {
-								GUILayout.Label(String.Format("Upgraded: {0}", d.upgradeToName));
-							} else if (!d.family.haveTechRequired(d.tl + 1)) {
-								GUILayout.Label(String.Format("Upgrade: requires {0}", d.family.getTechRequired(d.tl + 1)));
-							} else if (d.tl + 1 >= d.family.unlocked) {
-								GUILayout.Label(String.Format("Upgrade: unlock TL {0}", d.tl + 2));
-							} else {
-								if (GUILayout.Button("Upgrade")) {
-									Design up = new Design(d, d.tl + 1);
-									Design updup = up.checkDuplicate();
-									if (updup != null) {
-										/* Link the existing upgrade to this design.
-										 * It shouldn't be possible for updup to already have an upgradeFrom,
-										 * because otherwise we'd be a duplicate of that so how did we get
-										 * created in the first place?  But check anyway, and don't overwrite
-										 * an existing upgradeFrom.
-										 */
-										d.upgradeTo = updup.guid;
-										if (updup.upgradeFrom == Guid.Empty)
-											updup.upgradeFrom = d.guid;
-									} else {
-										up.name = inputName;
-										if (!Core.Instance.library.designs.ContainsKey(currentDesign.guid)) {
-											Core.Instance.library.AddDesign(up);
-											d.upgradeTo = up.guid;
-											renaming = up.guid; // select this design for renaming
-											module.DesignGuid = up.guid;
-											module.applyConfig();
-											/* Notify the editor that we changed the module's Design */
-											if (EditorLogic.fetch != null && EditorLogic.fetch.ship != null && HighLogic.LoadedSceneIsEditor)
-												GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
-											currentDesign = new Design(up);
-											fetchDesign();
-										}
-									}
-								}
-							}
-						}
-						d.hidden = GUILayout.Toggle(d.hidden, "X");
-						GUILayout.FlexibleSpace();
-					} finally {
-						GUILayout.EndHorizontal();
-					}
-				}
 			GUILayout.BeginHorizontal();
 			try {
 				inputName = GUILayout.TextField(inputName, GUILayout.Width(90));
@@ -151,10 +71,10 @@ namespace SPEngine.UI
 						Core.Instance.library.AddDesign(currentDesign);
 						module.DesignGuid = currentDesign.guid;
 						module.applyConfig();
-						currentDesign = new Design(currentDesign);
 						/* Notify the editor that we changed the module's Design */
 						if (EditorLogic.fetch != null && EditorLogic.fetch.ship != null && HighLogic.LoadedSceneIsEditor)
 							GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+						currentDesign = new Design(currentDesign); // decouple & get fresh guid
 					}
 					break;
 				case Design.Constraint.UNLOCK:
@@ -198,7 +118,16 @@ namespace SPEngine.UI
 				}
 				designScroll = GUILayout.BeginScrollView(designScroll, GUILayout.Width(595), GUILayout.Height(160));
 				try {
-					designList();
+					Design d = designList(module.familyLetter[0]);
+					if (d != null) {
+						module.DesignGuid = d.guid;
+						module.applyConfig();
+						/* Notify the editor that we changed the module's Design */
+						if (EditorLogic.fetch != null && EditorLogic.fetch.ship != null && HighLogic.LoadedSceneIsEditor)
+							GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+						fetchDesign();
+					}
+					designInput();
 				} finally {
 					GUILayout.EndScrollView();
 				}

@@ -13,6 +13,12 @@ namespace SPEngine
 
 		public void AddDesign(Design d)
 		{
+			if (designs.ContainsKey(d.guid))
+			{
+				/* Implies we've messed up somewhere and tried to add the same Design twice. */
+				Logging.LogFormat("Tried to add design with duplicate guid {0}", d.guid);
+				return;
+			}
 			designs[d.guid] = d;
 			generation++;
 		}

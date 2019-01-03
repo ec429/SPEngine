@@ -4,12 +4,10 @@ using UnityEngine;
 
 namespace SPEngine.UI
 {
-	public class MasterWindow : AbstractWindow
+	public class MasterWindow : DesignListWindow
 	{
 		Vector2 familyScroll, designScroll;
 		char showingFamily = '\0';
-		Guid confirmTool = Guid.Empty;
-		bool showAll = false;
 		public MasterWindow() :
 			base(new Guid("4607f309-0fc8-4c8a-bd7b-d214d0174bc8"),
 			     "SPEngine", new Rect(100, 100, 615, 320))
@@ -32,57 +30,6 @@ namespace SPEngine.UI
 					GUILayout.EndHorizontal();
 				}
 			}
-		}
-
-		private void designList()
-		{
-			foreach (Design d in Core.Instance.library.designs.Values)
-				if (d.family.letter == showingFamily) {
-					if (d.hidden && !showAll)
-						continue;
-					GUILayout.BeginHorizontal();
-					try {
-						GUILayout.Label(String.Format("{0}: {1:0.##}kN, {2} ignitions; TL {3}.  Mass {4:0.###}t, cost {5:0.#}f {6}{7}", d.name, d.thrust, d.ignitions, d.tl + 1, d.mass, d.cost, d.ullage ? "[U]" : "", d.pressureFed ? "[P]" : ""));
-						switch (d.check) {
-						case Design.Constraint.OK:
-							if (!d.tooled) {
-								if (confirmTool == d.guid) {
-									GUILayout.Label("Tool:");
-									if (GUILayout.Button("OK"))
-										d.Tool();
-									else if (GUILayout.Button("CANCEL"))
-										confirmTool = Guid.Empty;
-								} else {
-									if (GUILayout.Button("TOOL"))
-										confirmTool = d.guid;
-								}
-								GUILayout.Label(String.Format("{0:0.#}f", d.toolCost));
-							}
-							break;
-						case Design.Constraint.UNLOCK:
-							if (d.unlockCost == 0f) {
-								GUILayout.Label("Unlocking");
-								d.Unlock();
-								break;
-							}
-							if (GUILayout.Button("Unlock")) {
-								d.Unlock();
-							}
-							GUILayout.Label(String.Format("{0:F0}f", d.unlockCost));
-							break;
-						case Design.Constraint.TECH:
-							GUILayout.Label(String.Format("Requires {0}", d.techRequired));
-							break;
-						default:
-							GUILayout.Label(d.check.ToString());
-							break;
-						}
-						d.hidden = GUILayout.Toggle(d.hidden, "X");
-						GUILayout.FlexibleSpace();
-					} finally {
-						GUILayout.EndHorizontal();
-					}
-				}
 		}
 
 		public void techLevelList()
@@ -144,7 +91,7 @@ namespace SPEngine.UI
 					}
 					designScroll = GUILayout.BeginScrollView(designScroll, GUILayout.Width(595), GUILayout.Height(160));
 					try {
-						designList();
+						designList(showingFamily);
 					} finally {
 						GUILayout.EndScrollView();
 					}
