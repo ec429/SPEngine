@@ -8,12 +8,12 @@ namespace SPEngine
 {
 	public class DesignLibrary
 	{
-		public Dictionary<string, Design> designs = new Dictionary<string, Design>();
+		public Dictionary<Guid, Design> designs = new Dictionary<Guid, Design>();
 		public int generation = 0;
 
 		public void AddDesign(Design d)
 		{
-			designs[d.name] = d;
+			designs[d.guid] = d;
 			generation++;
 		}
 
@@ -31,13 +31,13 @@ namespace SPEngine
 			designs.Clear();
 			foreach (ConfigNode cn in node.GetNodes("Design")) {
 				Design d = new Design(cn);
-				designs.Add(d.name, d);
+				designs.Add(d.guid, d);
 			}
 		}
 
 		public void Save(ConfigNode node)
 		{
-			foreach (KeyValuePair<string, Design> kvp in designs) {
+			foreach (KeyValuePair<Guid, Design> kvp in designs) {
 				ConfigNode cn = new ConfigNode();
 				kvp.Value.Save(cn);
 				node.AddNode("Design", cn);

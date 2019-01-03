@@ -42,7 +42,7 @@ namespace SPEngine.UI
 					GUILayout.BeginHorizontal();
 					try {
 						if (GUILayout.Button(d.name)) {
-							module.DesignName = d.name;
+							module.DesignGuid = d.guid;
 							module.applyConfig();
 							fetchDesign();
 						}
@@ -61,14 +61,12 @@ namespace SPEngine.UI
 							GUILayout.Label(String.Format("{0:0.#}f", d.toolCost));
 						}
 						if (d.tl + 1 < d.family.techLevels.Count) {
-							if (d.upgradeTo != null) {
+							if (d.upgradeTo != Guid.Empty) {
 								GUILayout.Label(String.Format("Upgraded: {0}", d.upgradeTo));
 							} else if (!d.family.haveTechRequired(d.tl + 1)) {
 								GUILayout.Label(String.Format("Upgrade: requires {0}", d.family.getTechRequired(d.tl + 1)));
 							} else if (d.tl + 1 >= d.family.unlocked) {
 								GUILayout.Label(String.Format("Upgrade: unlock TL {0}", d.tl + 2));
-							} else if (Core.Instance.library.designs.ContainsKey(currentDesign.name)) {
-								GUILayout.Label("Upgrade: Name in use");
 							} else if (currentDesign.name.Equals("")) {
 								GUILayout.Label("Upgrade: Choose name");
 							} else {
@@ -82,15 +80,15 @@ namespace SPEngine.UI
 										 * created in the first place?  But check anyway, and don't overwrite
 										 * an existing upgradeFrom.
 										 */
-										d.upgradeTo = updup.name;
-										if (updup.upgradeFrom == null)
-											updup.upgradeFrom = d.name;
+										d.upgradeTo = updup.guid;
+										if (updup.upgradeFrom == Guid.Empty)
+											updup.upgradeFrom = d.guid;
 									} else {
 										up.name = inputName;
-										if (!Core.Instance.library.designs.ContainsKey(currentDesign.name)) {
+										if (!Core.Instance.library.designs.ContainsKey(currentDesign.guid)) {
 											Core.Instance.library.AddDesign(up);
-											d.upgradeTo = up.name;
-											module.DesignName = up.name;
+											d.upgradeTo = up.guid;
+											module.DesignGuid = up.guid;
 											module.applyConfig();
 											/* Notify the editor that we changed the module's Design */
 											if (EditorLogic.fetch != null && EditorLogic.fetch.ship != null && HighLogic.LoadedSceneIsEditor)
@@ -127,15 +125,13 @@ namespace SPEngine.UI
 				Design.Constraint check = currentDesign.check;
 				switch (check) {
 				case Design.Constraint.OK:
-					if (Core.Instance.library.designs.ContainsKey(currentDesign.name)) {
-						GUILayout.Label("Name in use");
-					} else if (currentDesign.name.Equals("")) {
+					if (currentDesign.name.Equals("")) {
 						GUILayout.Label("Choose name");
 					} else if (currentDesign.checkDuplicate() != null) {
 						GUILayout.Label(String.Format("Duplicates {0}", currentDesign.checkDuplicate().name));
 					} else if (GUILayout.Button("Apply")) {
 						Core.Instance.library.AddDesign(currentDesign);
-						module.DesignName = currentDesign.name;
+						module.DesignGuid = currentDesign.guid;
 						module.applyConfig();
 						currentDesign = new Design(currentDesign);
 						/* Notify the editor that we changed the module's Design */

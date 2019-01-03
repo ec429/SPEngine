@@ -6,6 +6,7 @@ namespace SPEngine
 {
 	public class Design
 	{
+		public Guid guid;
 		public string name; // user-provided name of this point-design
 		public char familyLetter;
 		public Family family;
@@ -13,8 +14,8 @@ namespace SPEngine
 		public float thrust;
 		public int ignitions;
 		public bool tooled = false;
-		public string upgradeFrom = null;
-		public string upgradeTo = null;
+		public Guid upgradeFrom;
+		public Guid upgradeTo;
 		private Design existingDesign = null;
 		private int generation = -1;
 		private Design checkedDesign = null;
@@ -32,6 +33,7 @@ namespace SPEngine
 			thrust = _thrust;
 			ignitions = _ignitions;
 			familyLetter = family.letter;
+			guid = Guid.NewGuid();
 		}
 		public Design(Family _family, int _tl)
 		{
@@ -41,6 +43,7 @@ namespace SPEngine
 			thrust = family.getMaxThrust(tl);
 			ignitions = family.getMaxIgnitions(tl);
 			familyLetter = family.letter;
+			guid = Guid.NewGuid();
 		}
 
 		public Design(Design old, int newTL) // upgrade of an existing design
@@ -53,7 +56,8 @@ namespace SPEngine
 			int ni = family.getMaxIgnitions(old.tl) - old.ignitions;
 			ignitions = family.getMaxIgnitions(tl) - ni;
 			familyLetter = family.letter;
-			upgradeFrom = old.name;
+			upgradeFrom = old.guid;
+			guid = Guid.NewGuid();
 		}
 
 		public Design(Design old) : this(old.name, old.family, old.tl, old.thrust, old.ignitions) // clone
@@ -142,7 +146,7 @@ namespace SPEngine
 		}
 		private Design upgradeFromDesign {
 			get {
-				if (upgradeFrom == null)
+				if (upgradeFrom == Guid.Empty)
 					return null;
 				if (!Core.Instance.library.designs.ContainsKey(upgradeFrom))
 					return null;
@@ -249,6 +253,7 @@ namespace SPEngine
 		public void Load(ConfigNode node)
 		{
 			name = node.GetValue("name");
+			guid = new Guid(node.GetValue("guid"));
 			familyLetter = node.GetValue("family")[0];
 			if (Core.Instance.families.ContainsKey(familyLetter)) {
 				family = Core.Instance.families[familyLetter];
@@ -261,22 +266,23 @@ namespace SPEngine
 			ignitions = int.Parse(node.GetValue("ignitions"));
 			tooled = bool.Parse(node.GetValue("tooled"));
 			if (node.HasValue("upgradeFrom"))
-				upgradeFrom = node.GetValue("upgradeFrom");
+				upgradeFrom = new Guid(node.GetValue("upgradeFrom"));
 			if (node.HasValue("upgradeTo"))
-				upgradeTo = node.GetValue("upgradeTo");
+				upgradeTo = new Guid(node.GetValue("upgradeTo"));
 		}
 
 		public void Save(ConfigNode node)
 		{
 			node.AddValue("name", name);
+			node.AddValue("guid", guid.ToString());
 			node.AddValue("family", familyLetter.ToString());
 			node.AddValue("tl", tl.ToString());
 			node.AddValue("thrust", thrust.ToString());
 			node.AddValue("ignitions", ignitions.ToString());
 			node.AddValue("tooled", tooled.ToString());
-			if (upgradeFrom != null)
+			if (upgradeFrom != Guid.Empty)
 				node.AddValue("upgradeFrom", upgradeFrom);
-			if (upgradeTo != null)
+			if (upgradeTo != Guid.Empty)
 				node.AddValue("upgradeTo", upgradeTo);
 		}
 	}
