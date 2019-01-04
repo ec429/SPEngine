@@ -137,6 +137,11 @@ namespace SPEngine
 			}
 			this.OnAwake();
 		}
+		public override void OnSave(ConfigNode node)
+		{
+			base.OnSave(node);
+			node.AddValue("DesignGuid", DesignGuid.ToString());
+		}
 
 		[KSPEvent(name = "EventEdit", guiName = "Configure", guiActiveEditor = true)]
 		public void EventEdit()
