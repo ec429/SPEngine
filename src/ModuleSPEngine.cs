@@ -72,7 +72,7 @@ namespace SPEngine
 
 		#endregion
 
-		public void applyConfig()
+		public void applyConfig(bool propagate)
 		{
 			cacheDesign = null;
 			if (design == null)
@@ -112,6 +112,13 @@ namespace SPEngine
 				node.AddNode(design.ignitorResources[i]);
 			engine.configs.Add(node);
 			engine.SetConfiguration(configName);
+			if (propagate)
+				UpdateSymmetryCounterparts();
+		}
+
+		public void applyConfig()
+		{
+			applyConfig(true);
 		}
 
 		public override void OnAwake()
@@ -141,6 +148,23 @@ namespace SPEngine
 		{
 			base.OnSave(node);
 			node.AddValue("DesignGuid", DesignGuid.ToString());
+		}
+
+		virtual public void UpdateSymmetryCounterparts()
+		{
+			if (part.symmetryCounterparts == null)
+				return;
+
+			int pCount = part.symmetryCounterparts.Count;
+			for (int j = 0; j < pCount; j++)
+			{
+				if (part.symmetryCounterparts[j] == part)
+					continue;
+				/* Assumes each part only has one ModuleSPEngine. */
+				ModuleSPEngine engine = part.symmetryCounterparts[j].FindModuleImplementing<ModuleSPEngine>();
+				engine.DesignGuid = DesignGuid;
+				engine.applyConfig(false);
+			}
 		}
 
 		[KSPEvent(name = "EventEdit", guiName = "Configure", guiActiveEditor = true)]
