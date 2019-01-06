@@ -112,7 +112,7 @@ namespace SPEngine
 				node.AddNode(design.ignitorResources[i]);
 			engine.configs.Add(node);
 			engine.SetConfiguration(configName);
-			if (propagate && DesignGuid != Guid.Empty)
+			if (propagate && design != design.family.baseDesign)
 				UpdateSymmetryCounterparts();
 		}
 
@@ -131,6 +131,14 @@ namespace SPEngine
 		{
 			base.OnStart(state);
 			this.OnAwake();
+		}
+
+		public override void OnCopy(PartModule fromModule)
+		{
+			ModuleSPEngine from = fromModule as ModuleSPEngine;
+			DesignGuid = from.DesignGuid;
+			base.OnCopy(fromModule);
+			OnAwake();
 		}
 
 		public override void OnLoad(ConfigNode node)
