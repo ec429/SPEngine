@@ -62,10 +62,18 @@ The plugin depends directly on RealFuels.  The part configs generally work by
  * D-class (AJ10): SXT
  * G-class (Agena): VenStockRevamp
  * J-class (J-2): SXT
+ * K-class alternate model (H-1): FASA
  * M-class (M-1): FASA
 Also, TestFlight is recommended (but not required), as increased burn-time
  limits and improved reliability are often the biggest upgrades from one tech
  level to the next.
+And of course you need ModuleManager.
+
+How do I install it?
+--------------------
+
+Assuming you've installed all the dependencies (see above), just copy the
+ GameData/SPEngine folder into your KSP install's GameData/.
 
 Where do I report bugs?
 -----------------------
