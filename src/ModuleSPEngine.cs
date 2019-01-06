@@ -112,7 +112,7 @@ namespace SPEngine
 				node.AddNode(design.ignitorResources[i]);
 			engine.configs.Add(node);
 			engine.SetConfiguration(configName);
-			if (propagate)
+			if (propagate && DesignGuid != Guid.Empty)
 				UpdateSymmetryCounterparts();
 		}
 
