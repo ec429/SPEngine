@@ -86,7 +86,7 @@ namespace SPEngine.UI
 			Enabled = false;
 			GameEvents.onHideUI.Remove(OnHideUI);
 			GameEvents.onShowUI.Remove(OnShowUI);
-            		InputLockManager.RemoveControlLock("SPEngineWindowLock");
+			InputLockManager.RemoveControlLock("SPEngineWindowLock");
 		}
 
 		private void WindowPre(int uid)
