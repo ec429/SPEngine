@@ -106,6 +106,10 @@ namespace SPEngine
 			node.AddNode("atmosphereCurve", ispn);
 			node.AddValue("ullage", design.ullage.ToString());
 			node.AddValue("pressureFed", design.pressureFed.ToString());
+			/* Setting this to 0 forces RF to calculate a proper throttle up time.
+			 * Previously it was taking (assumingly large) numbers and setting instant throttle
+			 */
+			node.AddValue("throttleResponseRate", 0);
 			for (int i = 0; i < design.propellants.Count; i++)
 				node.AddNode(design.propellants[i]);
 			for (int i = 0; i < design.ignitorResources.Count; i++)
