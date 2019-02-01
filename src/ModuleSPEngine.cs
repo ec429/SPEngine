@@ -106,6 +106,7 @@ namespace SPEngine
 			node.AddNode("atmosphereCurve", ispn);
 			node.AddValue("ullage", design.ullage.ToString());
 			node.AddValue("pressureFed", design.pressureFed.ToString());
+			node.AddValue("throttleResponseRate", 0);
 			for (int i = 0; i < design.propellants.Count; i++)
 				node.AddNode(design.propellants[i]);
 			for (int i = 0; i < design.ignitorResources.Count; i++)
