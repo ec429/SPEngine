@@ -25,3 +25,5 @@ S: Small staged-combustion kerolox engine.  E.g. RD-58.
 T: Large hypergolic atmospheric engine.  E.g. LR87 (Titan II onwards).
 U: Staged-combustion methalox sustainer engine.  E.g. Raptor, BE-4.
 V: Kerolox vacuum engine.  E.g. LR91 (Titan I), Merlin1Vac.
+Y: Large staged-combustion kerolox vacuum engine.  E.g. NK-V series.
+Z: Throttleable hypergolic vacuum engine.  E.g. LMDE.

@@ -65,6 +65,8 @@ The plugin depends directly on RealFuels.  The part configs generally work by
  * J-class (J-2): SXT
  * K-class alternate model (H-1): FASA
  * M-class (M-1): FASA
+ * N-class (NK-15): RealEngines
+ * Y-class (NK-15V): RealEngines
 Also, TestFlight is recommended (but not required), as increased burn-time
  limits and improved reliability are often the biggest upgrades from one tech
  level to the next.
