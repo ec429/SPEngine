@@ -60,6 +60,7 @@ The plugin depends directly on RealFuels.  The part configs generally work by
  needed:
  * A-class (A-4): Taerobee
  * D-class (AJ10): SXT
+ * E-class (LR91) alternate model: FASA
  * G-class (Agena): VenStockRevamp
  * J-class (J-2): SXT
  * K-class alternate model (H-1): FASA
