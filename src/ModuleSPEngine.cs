@@ -6,7 +6,7 @@ using System.Text;
 
 namespace SPEngine
 {
-	public class ModuleSPEngine : PartModule, IPartCostModifier, IPartMassModifier
+	public class ModuleSPEngine : PartModule, IPartMassModifier
 	{
 		public Guid DesignGuid;
 		[KSPField(guiActive=true, guiActiveEditor=true, guiName="Design")]
@@ -43,20 +43,6 @@ namespace SPEngine
 				return Core.Instance.library.designs[DesignGuid];
 			}
 		}
-
-		#region IPartCostModifier implementation
-
-		public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
-		{
-			return design == null || design.broken ? 0 : design.cost - defaultCost;
-		}
-
-		public ModifierChangeWhen GetModuleCostChangeWhen()
-		{
-			return ModifierChangeWhen.FIXED;
-		}
-
-		#endregion
 
 		#region IPartMassModifier implementation
 
@@ -106,6 +92,7 @@ namespace SPEngine
 			node.AddNode("atmosphereCurve", ispn);
 			node.AddValue("ullage", design.ullage.ToString());
 			node.AddValue("pressureFed", design.pressureFed.ToString());
+			node.AddValue("cost", design.cost.ToString());
 			/* Setting this to 0 forces RF to calculate a proper throttle up time.
 			 * Previously it was taking (assumingly large) numbers and setting instant throttle
 			 */
