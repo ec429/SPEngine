@@ -17,7 +17,7 @@ using System.Runtime.InteropServices;
 [assembly: Guid("349cd4dd-fbd9-495e-aea9-73b036736bd8")]
 
 [assembly: AssemblyVersion("0.1")]
-[assembly: AssemblyFileVersion("0.1.0")]
+[assembly: AssemblyFileVersion("0.1.1")]
 
 // Use KSPAssembly to allow other DLLs to make this DLL a dependency in a
 // non-hacky way in KSP.  Format is (AssemblyProduct, major, minor), and it

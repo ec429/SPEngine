@@ -70,7 +70,7 @@ The plugin depends directly on RealFuels.  The part configs generally work by
  * Y-class (NK-15V): RealEngines
 Also, TestFlight is recommended (but not required), as increased burn-time
  limits and improved reliability are often the biggest upgrades from one tech
- level to the next.
+ level to the next.  Alternatively, TestLite is also supported.
 And of course you need ModuleManager.
 
 How do I install it?
