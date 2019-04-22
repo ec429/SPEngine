@@ -28,3 +28,6 @@ V: Kerolox vacuum engine.  E.g. LR91 (Titan I), Merlin1Vac.
 X: Kerosene/peroxide pump-fed engine.  Examples include British Gamma and Stentor.
 Y: Large staged-combustion kerolox vacuum engine.  E.g. NK-V series.
 Z: Throttleable hypergolic vacuum engine.  E.g. LMDE.
+
+Still to configure: CHUV
+Letters not used: IOW
