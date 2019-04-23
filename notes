@@ -18,6 +18,7 @@ K: Kerolox atmospheric engine (not huge).  Examples include X405, LR79/89/H-1, L
 L: Kerolox sustainer engine.  Examples include LR105, RD-108.
 M: Huge hydrolox vacuum engine.  E.g. M-1.
 N: Large staged-combustion kerolox engine.  E.g. NK series.
+O: Staged-combustion hypergolic vacuum engine.  E.g. RD-0210 (Proton upper stage).
 P: Staged-combustion hypergolic engine.  E.g. Proton (RD-253 etc.).
 Q: Throttleable small hydrolox vacuum engine.  Based on RL10 deep-throttling projects (e.g. for Lunex).
 R: Small hydrolox vacuum engine.  E.g. RL10.
@@ -30,4 +31,4 @@ Y: Large staged-combustion kerolox vacuum engine.  E.g. NK-V series.
 Z: Throttleable hypergolic vacuum engine.  E.g. LMDE.
 
 Still to configure: CHU
-Letters not used: IOW
+Letters not used: IW
