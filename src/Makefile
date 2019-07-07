@@ -12,3 +12,6 @@ $(BINDIR)/SPEngine.dll: $(SOURCES)
 
 $(OUTDIR)/SPEngine.dll: $(BINDIR)/SPEngine.dll
 	cp $< $@
+
+clean:
+	-rm $(BINDIR)/SPEngine.dll $(OUTDIR)/SPEngine.dll
