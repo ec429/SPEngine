@@ -31,7 +31,7 @@ X: Kerosene/peroxide pump-fed atmospheric engine.  Examples include British Gamm
 Y: Large staged-combustion kerolox vacuum engine.  E.g. NK-V series.
 Z: Throttleable hypergolic vacuum engine.  E.g. LMDE.
 
-Still to configure: CHU
+Still to configure: CU
 Letters not used: I
 
 
@@ -80,19 +80,19 @@ SC    S
 14
 NF
 Hydrolox
-PH    R
-EH    R
-IH J QR
-LH J
+PH     R
+EH     R
+IH  J QR
+LH  J
 68
-72 JMQR
-76 JM
-81 J
-86  M
-92   QR
-98    R
-09 J QR
-NF J
-+1 J
-+2 J
-+3 J
+72  JMQR
+76 HJM
+81 HJ
+86 H M
+92 H  QR
+98 H   R
+09  J QR
+NF  J
++1  J
++2  J
++3  J

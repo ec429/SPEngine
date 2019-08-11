@@ -62,6 +62,7 @@ The plugin depends directly on RealFuels.  The part configs generally work by
  * D-class (AJ10): SXT
  * E-class (LR91) alternate model: FASA
  * G-class (Agena): VenStockRevamp
+ * H-class (SSME): ROEngines
  * J-class (J-2): SXT
  * K-class alternate model (H-1): FASA
  * M-class (M-1): FASA
