@@ -33,3 +33,66 @@ Z: Throttleable hypergolic vacuum engine.  E.g. LMDE.
 
 Still to configure: CHU
 Letters not used: I
+
+
+Tech Tables:
+Orbital Rocketry
+ST AB
+PW AB
+ER  B
+BR A         WX
+56 A D   KL  WX
+58   D   KL
+59   D  GK  V X
+60   D   KL  W
+61   D  GK  V X
+62    E G LT
+63          V
+64   DE    T
+65    E GKLTV
+66           WX
+67     FG L
+70    E    T WX
+72   D   K T
+76     F
+81    E      WX
+86   D  GKL
+92           WX
+98          V
+04       K  VW
+09       K  V
+14       K  V
+NF     F
+Staged Combustion
+SC    S
+64  O S
+66  OPS
+67  OPS
+69 N   Y
+70   P
+72 N  SY
+81   PS
+86
+92   P
+98
+04   P
+09 N
+14
+NF
+Hydrolox
+PH    R
+EH    R
+IH J QR
+LH J
+68
+72 JMQR
+76 JM
+81 J
+86  M
+92   QR
+98    R
+09 J QR
+NF J
++1 J
++2 J
++3 J
