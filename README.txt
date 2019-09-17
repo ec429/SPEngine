@@ -5,8 +5,9 @@ SPEngine is a mod for the Squad game "Kerbal Space Program".
 Like the name implies, it allows the player to design procedurally-created
  engines, using a simple and understandable model.
 
-SPEngine is currently in alpha; it's had little testing, and the configs
- aren't done.  However, the basic mechanic works.
+SPEngine is currently in beta; the engine configs aren't all complete, though
+ we're only missing a couple and the basic functionality works.  Perhaps the
+ biggest hole is that the part model size doesn't change with thrust level.
 
 SPEngine is developed by Edward Cree, aka 'soundnfury'.
 
