@@ -19,6 +19,7 @@ K: Kerolox atmospheric engine (not huge).  Examples include X405, LR79/89/H-1, L
 L: Kerolox sustainer engine.  Examples include LR105, RD-108.
 M: Huge hydrolox vacuum engine.  E.g. M-1.
 N: Large staged-combustion kerolox engine.  E.g. NK series.
+n: Medium staged-combustion kerolox engine.  E.g. NK-9.
 O: Staged-combustion hypergolic vacuum engine.  E.g. RD-0210 (Proton upper stage).
 P: Staged-combustion hypergolic engine.  E.g. Proton (RD-253 etc.).
 Q: Throttleable small hydrolox vacuum engine.  Based on RL10 deep-throttling projects (e.g. for Lunex).
@@ -30,10 +31,11 @@ V: Kerolox vacuum engine.  E.g. LR91 (Titan I), Merlin1Vac.
 W: Kerosene/peroxide pump-fed vacuum engine.  Examples include British Gamma 2.
 X: Kerosene/peroxide pump-fed atmospheric engine.  Examples include British Gamma 8 and Stentor.
 Y: Large staged-combustion kerolox vacuum engine.  E.g. NK-V series.
+y: Medium staged-combustion kerolox vacuum engine.  E.g. NK-9V.
 Z: Throttleable hypergolic vacuum engine.  E.g. LMDE.
 
 Still to configure: CU
-Letters not used: I
+Letters not used: Ibcdefghijklmopqrstuvwxz
 
 
 Tech Tables:
@@ -65,19 +67,19 @@ BR Aa         WX
 14        K  V
 NF      F
 Staged Combustion
-SC    S
-64  O S
-66  OPS
-67  OPS
-69 N   Y
-70   P
-72 N  SY
-81   PS
+SC     S
+64  nO S y
+66   OPS
+67   OPS
+69 Nn   Yy
+70    P
+72 Nn  SYy
+81    PS
 86
-92   P
+92    P
 98
-04   P
-09 N
+04    P
+09 Nn
 14
 NF
 Hydrolox
