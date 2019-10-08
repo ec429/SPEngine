@@ -5,7 +5,8 @@ Variables: size (affects mass, thrust, cost), nIgnitions (affects cost), others?
 Once you've fixed a design, you can upgrade it as you unlock techs.
 
 Classes:
-A: Alcohol/LOx atmospheric engine.  Cheap'n'easy for the low TLs.  Examples include A4, A6, RD-100, XLR11 (Bell X-1).
+A: Alcohol/LOx atmospheric engine (US style).  Primitive, but less so than Russian-style.  Examples include A4, A6, XLR11 (Bell X-1).
+a: Alcohol/LOx atmospheric engine (Russian style).  Cheap'n'easy for the low TLs.  Examples include RD-100 series.
 B: Small hypergolic sustainer engine.  Examples include Aerobee and very early AJ-10s.
 C: Small methalox vacuum engine.  E.g. RL10-CH₄.
 D: Pressure-fed hypergolic vacuum engine.  Examples include AJ10 family (Able, Delta, Apollo SPS...).
@@ -37,32 +38,32 @@ Letters not used: I
 
 Tech Tables:
 Orbital Rocketry
-ST AB
-PW AB
-ER  B
-BR A         WX
-56 A D   KL  WX
-58   D   KL
-59   D  GK  V X
-60   D   KL  W
-61   D  GK  V X
-62    E G LT
-63          V
-64   DE    T
-65    E GKLTV
-66           WX
-67     FG L
-70    E    T WX
-72   D   K T
-76     F
-81    E      WX
-86   D  GKL
-92           WX
-98          V
-04       K  VW
-09       K  V
-14       K  V
-NF     F
+ST AaB
+PW AaB
+ER  aB
+BR Aa         WX
+56 Aa D   KL  WX
+58    D   KL
+59    D  GK  V X
+60    D   KL  W
+61    D  GK  V X
+62     E G LT
+63           V
+64    DE    T
+65     E GKLTV
+66            WX
+67      FG L
+70     E    T WX
+72    D   K T
+76      F
+81     E      WX
+86    D  GKL
+92            WX
+98           V
+04        K  VW
+09        K  V
+14        K  V
+NF      F
 Staged Combustion
 SC    S
 64  O S
