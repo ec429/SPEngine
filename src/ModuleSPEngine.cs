@@ -135,11 +135,13 @@ namespace SPEngine
 		public override void OnLoad(ConfigNode node)
 		{
 			base.OnLoad(node);
-			try {
-				DesignGuid = new Guid(node.GetValue("DesignGuid"));
-			} catch (Exception ex) {
-				// we failed to load it, so we're a broken part now.  Nothing we can do about it, so let's log and swallow the exception :(
-				Logging.LogException(ex);
+			if (node.HasValue("DesignGuid")) {
+				try {
+					DesignGuid = new Guid(node.GetValue("DesignGuid"));
+				} catch (Exception ex) {
+					// we failed to load it, so we're a broken part now.  Nothing we can do about it, so let's log and swallow the exception :(
+					Logging.LogException(ex);
+				}
 			}
 			this.OnAwake();
 		}
