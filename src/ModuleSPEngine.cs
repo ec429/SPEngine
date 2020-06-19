@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
+using System.Linq;
 
 namespace SPEngine
 {
@@ -15,6 +16,11 @@ namespace SPEngine
 
 		[KSPField()]
 		public string familyLetter;
+
+		[KSPField()]
+		public float scaleReference = 0.7f; /* thrust factor of the reference visual model */
+
+		private float oldScale = 1.0f;
 
 		private RealFuels.ModuleEngineConfigs engine;
 
@@ -57,6 +63,56 @@ namespace SPEngine
 		}
 
 		#endregion
+
+		private float scaleFactor {
+			get {
+				return design.getScaleFactor(scaleReference);
+			}
+		}
+
+		private void moveNode(AttachNode node, AttachNode baseNode)
+		{
+			var oldPosition = node.position;
+
+			node.position = baseNode.position * scaleFactor;
+
+			if (node.attachedPart == part.parent)
+				part.transform.Translate(oldPosition - node.position, part.transform);
+		}
+
+		private void fixNodes()
+		{
+			var prefab = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab;
+
+			foreach (var node in part.attachNodes) {
+				var nodesWithSameId = part.attachNodes.Where(a => a.id == node.id).ToArray();
+				var idIdx = Array.FindIndex(nodesWithSameId, a => a == node);
+				var baseNodesWithSameId = prefab.attachNodes.Where(a => a.id == node.id).ToArray();
+				if (idIdx < baseNodesWithSameId.Length) {
+					moveNode(node, baseNodesWithSameId[idIdx]);
+				} else {
+					Logging.LogFormat("Error scaling part. Node {0} does not have counterpart in base part.", node.id);
+				}
+			}
+
+			if (part.srfAttachNode != null)
+				moveNode(part.srfAttachNode, prefab.srfAttachNode);
+		}
+
+		private void scaleDragCubes()
+		{
+			float factor = scaleFactor / oldScale;
+			int len = part.DragCubes.Cubes.Count;
+			for (int ic = 0; ic < len; ic++) {
+				DragCube dragCube = part.DragCubes.Cubes[ic];
+				dragCube.Size *= factor;
+				for (int i = 0; i < dragCube.Area.Length; i++)
+					dragCube.Area[i] *= factor * factor;
+				for (int i = 0; i < dragCube.Depth.Length; i++)
+					dragCube.Depth[i] *= factor;
+			}
+			part.DragCubes.ForceUpdate(true, true);
+		}
 
 		public void applyConfig(bool propagate)
 		{
@@ -103,6 +159,12 @@ namespace SPEngine
 				node.AddNode(design.ignitorResources[i]);
 			engine.configs.Add(node);
 			engine.SetConfiguration(configName);
+			/* Scale the visual model, nodes and drag cubes */
+			part.partTransform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
+			part.partTransform.hasChanged = true;
+			fixNodes();
+			scaleDragCubes();
+			oldScale = scaleFactor;
 			if (propagate && design != design.family.baseDesign)
 				UpdateSymmetryCounterparts();
 		}

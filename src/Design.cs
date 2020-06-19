@@ -259,12 +259,11 @@ namespace SPEngine
 				return family.getIgnitorResources(tl);
 			}
 		}
-		public float scaleFactor {
-			get {
-				if (broken)
-					return float.NaN;
-				return family.getScaleFactor(tl, thrust);
-			}
+		public float getScaleFactor(float scaleReference)
+		{
+			if (broken)
+				return float.NaN;
+			return family.getScaleFactor(tl, thrust, scaleReference);
 		}
 
 		public void Load(ConfigNode node)
