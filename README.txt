@@ -6,8 +6,7 @@ Like the name implies, it allows the player to design procedurally-created
  engines, using a simple and understandable model.
 
 SPEngine is currently in beta; the engine configs aren't all complete, though
- we're only missing a couple and the basic functionality works.  Perhaps the
- biggest hole is that the part model size doesn't change with thrust level.
+ we're only missing a couple and the basic functionality works.
 
 SPEngine is developed by Edward Cree, aka 'soundnfury'.
 

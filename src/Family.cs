@@ -141,9 +141,9 @@ namespace SPEngine
 			}
 			return true;
 		}
-		public float getScaleFactor(float thrust)
+		public float getScaleFactor(float thrust, float scaleReference)
 		{
-			return (float)Math.Sqrt(thrust / maxThrust);
+			return (float)Math.Pow(thrust / maxThrust / scaleReference, 0.4);
 		}
 	}
 
@@ -321,11 +321,11 @@ namespace SPEngine
 				return null;
 			return techLevels[tl].ignitorResources;
 		}
-		public float getScaleFactor(int tl, float thrust)
+		public float getScaleFactor(int tl, float thrust, float scaleReference)
 		{
 			if (!check(tl))
 				return float.NaN;
-			return techLevels[tl].getScaleFactor(thrust);
+			return techLevels[tl].getScaleFactor(thrust, scaleReference);
 		}
 	}
 }
