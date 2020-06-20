@@ -20,7 +20,7 @@ namespace SPEngine
 		[KSPField()]
 		public float scaleReference = 0.7f; /* thrust factor of the reference visual model */
 
-		private float oldScale = 1.0f;
+		private bool firstUpdate = false, secondUpdate = false;
 
 		private RealFuels.ModuleEngineConfigs engine;
 
@@ -99,25 +99,6 @@ namespace SPEngine
 				moveNode(part.srfAttachNode, prefab.srfAttachNode, movePart);
 		}
 
-		private void scaleDragCubes()
-		{
-			/* This causes SIGSEGV crashes, so for now it's not called.
-			 * DRVeyl says to do what https://github.com/KSP-RO/ProceduralParts/blob/3466a39/Source/ProceduralPart.cs#L698-L725 does instead, maybe we'll try that later.
-			 * For now, we just live with potentially-incorrect drag cubes.
-			 */
-			float factor = scaleFactor / oldScale;
-			int len = part.DragCubes.Cubes.Count;
-			for (int ic = 0; ic < len; ic++) {
-				DragCube dragCube = part.DragCubes.Cubes[ic];
-				dragCube.Size *= factor;
-				for (int i = 0; i < dragCube.Area.Length; i++)
-					dragCube.Area[i] *= factor * factor;
-				for (int i = 0; i < dragCube.Depth.Length; i++)
-					dragCube.Depth[i] *= factor;
-			}
-			part.DragCubes.ForceUpdate(true, true);
-		}
-
 		public void applyConfig(bool propagate, bool movePart)
 		{
 			cacheDesign = null;
@@ -164,11 +145,14 @@ namespace SPEngine
 			engine.configs.Add(node);
 			engine.SetConfiguration(configName);
 			/* Scale the visual model, nodes and drag cubes */
-			part.partTransform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
-			part.partTransform.hasChanged = true;
+			var prefab = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab;
+			Transform xform = part.partTransform.Find("model"), preform = prefab.partTransform;
+			xform.localScale = preform.localScale * scaleFactor;
+			xform.hasChanged = true;
 			fixNodes(movePart);
-			//scaleDragCubes(); // This causes crashes.  Evidently we're doing it wrong.
-			oldScale = scaleFactor;
+			/* TODO drag cubes.  Somehow.
+			 * DRVeyl says to do what https://github.com/KSP-RO/ProceduralParts/blob/3466a39/Source/ProceduralPart.cs#L698-L725 does.
+			 */
 			if (propagate && design != design.family.baseDesign)
 				UpdateSymmetryCounterparts();
 		}
@@ -182,6 +166,16 @@ namespace SPEngine
 		{
 			engine = part.FindModuleImplementing<RealFuels.ModuleEngineConfigs>();
 			applyConfig(false, false);
+		}
+
+		public void Update()
+		{
+			if (!firstUpdate) {
+				firstUpdate = true;
+			} else if (!secondUpdate) {
+				applyConfig(false, true);
+				secondUpdate = true;
+			}
 		}
 
 		public override void OnStart(StartState state)
