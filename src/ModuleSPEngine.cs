@@ -70,17 +70,17 @@ namespace SPEngine
 			}
 		}
 
-		private void moveNode(AttachNode node, AttachNode baseNode)
+		private void moveNode(AttachNode node, AttachNode baseNode, bool movePart)
 		{
 			var oldPosition = node.position;
 
 			node.position = baseNode.position * scaleFactor;
 
-			if (node.attachedPart == part.parent)
+			if (movePart && node.attachedPart == part.parent)
 				part.transform.Translate(oldPosition - node.position, part.transform);
 		}
 
-		private void fixNodes()
+		private void fixNodes(bool movePart)
 		{
 			var prefab = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab;
 
@@ -89,18 +89,22 @@ namespace SPEngine
 				var idIdx = Array.FindIndex(nodesWithSameId, a => a == node);
 				var baseNodesWithSameId = prefab.attachNodes.Where(a => a.id == node.id).ToArray();
 				if (idIdx < baseNodesWithSameId.Length) {
-					moveNode(node, baseNodesWithSameId[idIdx]);
+					moveNode(node, baseNodesWithSameId[idIdx], movePart);
 				} else {
 					Logging.LogFormat("Error scaling part. Node {0} does not have counterpart in base part.", node.id);
 				}
 			}
 
 			if (part.srfAttachNode != null)
-				moveNode(part.srfAttachNode, prefab.srfAttachNode);
+				moveNode(part.srfAttachNode, prefab.srfAttachNode, movePart);
 		}
 
 		private void scaleDragCubes()
 		{
+			/* This causes SIGSEGV crashes, so for now it's not called.
+			 * DRVeyl says to do what https://github.com/KSP-RO/ProceduralParts/blob/3466a39/Source/ProceduralPart.cs#L698-L725 does instead, maybe we'll try that later.
+			 * For now, we just live with potentially-incorrect drag cubes.
+			 */
 			float factor = scaleFactor / oldScale;
 			int len = part.DragCubes.Cubes.Count;
 			for (int ic = 0; ic < len; ic++) {
@@ -114,7 +118,7 @@ namespace SPEngine
 			part.DragCubes.ForceUpdate(true, true);
 		}
 
-		public void applyConfig(bool propagate)
+		public void applyConfig(bool propagate, bool movePart)
 		{
 			cacheDesign = null;
 			if (design == null)
@@ -162,8 +166,8 @@ namespace SPEngine
 			/* Scale the visual model, nodes and drag cubes */
 			part.partTransform.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 			part.partTransform.hasChanged = true;
-			fixNodes();
-			scaleDragCubes();
+			fixNodes(movePart);
+			//scaleDragCubes(); // This causes crashes.  Evidently we're doing it wrong.
 			oldScale = scaleFactor;
 			if (propagate && design != design.family.baseDesign)
 				UpdateSymmetryCounterparts();
@@ -171,13 +175,13 @@ namespace SPEngine
 
 		public void applyConfig()
 		{
-			applyConfig(true);
+			applyConfig(true, true);
 		}
 
 		public override void OnAwake()
 		{
 			engine = part.FindModuleImplementing<RealFuels.ModuleEngineConfigs>();
-			applyConfig();
+			applyConfig(false, false);
 		}
 
 		public override void OnStart(StartState state)
@@ -226,7 +230,7 @@ namespace SPEngine
 				/* Assumes each part only has one ModuleSPEngine. */
 				ModuleSPEngine engine = part.symmetryCounterparts[j].FindModuleImplementing<ModuleSPEngine>();
 				engine.DesignGuid = DesignGuid;
-				engine.applyConfig(false);
+				engine.applyConfig(false, true);
 			}
 		}
 
