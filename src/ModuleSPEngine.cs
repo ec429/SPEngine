@@ -76,8 +76,12 @@ namespace SPEngine
 
 			node.position = baseNode.position * scaleFactor;
 
-			if (movePart && node.attachedPart == part.parent)
-				part.transform.Translate(oldPosition - node.position, part.transform);
+			if (movePart) {
+				if (node.attachedPart == part.parent)
+					part.transform.Translate(oldPosition - node.position, part.transform);
+				else if (node.attachedPart != null)
+					node.attachedPart.transform.Translate(node.position - oldPosition, part.transform);
+			}
 		}
 
 		private void fixNodes(bool movePart)
@@ -173,7 +177,7 @@ namespace SPEngine
 			if (!firstUpdate) {
 				firstUpdate = true;
 			} else if (!secondUpdate) {
-				applyConfig(false, true);
+				applyConfig(false, false);
 				secondUpdate = true;
 			}
 		}
