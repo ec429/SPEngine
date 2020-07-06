@@ -66,7 +66,9 @@ namespace SPEngine
 
 		private float scaleFactor {
 			get {
-				return design.getScaleFactor(scaleReference);
+				if (design == null || design.broken)
+					return 1.0f;
+				return design.getScaleFactor(scaleReference) * part.rescaleFactor;
 			}
 		}
 
