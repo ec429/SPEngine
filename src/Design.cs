@@ -271,7 +271,7 @@ namespace SPEngine
 			name = node.GetValue("name");
 			guid = new Guid(node.GetValue("guid"));
 			familyLetter = node.GetValue("family")[0];
-			if (Core.Instance.families.ContainsKey(familyLetter)) {
+			if (Core.Instance.families != null && Core.Instance.families.ContainsKey(familyLetter)) {
 				family = Core.Instance.families[familyLetter];
 			} else {
 				Logging.LogFormat("Failed to load family '{0}'", familyLetter);

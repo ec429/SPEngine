@@ -12,7 +12,7 @@ namespace SPEngine
 		public Guid DesignGuid;
 		[KSPField(guiActive=true, guiActiveEditor=true, guiName="Design")]
 		public string DesignName = "";
-		private Design cacheDesign = null;
+		private Design cacheDesign = null, shareDesign = null;
 
 		[KSPField()]
 		public string familyLetter;
@@ -36,7 +36,9 @@ namespace SPEngine
 				if (Core.Instance == null)
 					return null;
 				if (!Core.Instance.library.designs.ContainsKey(DesignGuid)) {
-					Logging.LogFormat("Design {0} not found; families {1}", DesignGuid, Core.Instance.families == null ? "missing" : "found");
+					Logging.LogFormat("Design {0} not found; families {1}; share {2}", DesignGuid, Core.Instance.families == null ? "missing" : "found", shareDesign == null ? "missing" : "found");
+					if (shareDesign != null)
+						return shareDesign;
 					if (familyLetter == null || Core.Instance.families == null)
 						return null;
 					if (!Core.Instance.families.ContainsKey(familyLetter[0])) {
@@ -209,12 +211,28 @@ namespace SPEngine
 					Logging.LogException(ex);
 				}
 			}
+			if (node.HasNode("share"))
+			{
+				try {
+					shareDesign = new Design(node.GetNode("share"));
+					shareDesign.tooled = false;
+				} catch (Exception ex) {
+					// we failed to load our shareDesign.  Sorry.
+					Logging.LogException(ex);
+					shareDesign = null;
+				}
+			}
 			this.OnAwake();
 		}
 		public override void OnSave(ConfigNode node)
 		{
 			base.OnSave(node);
 			node.AddValue("DesignGuid", DesignGuid.ToString());
+			if (design != null) {
+				// record Design data to allow sharing vessel files
+				ConfigNode share = node.AddNode("share");
+				design.Save(share);
+			}
 		}
 
 		virtual public void UpdateSymmetryCounterparts()
