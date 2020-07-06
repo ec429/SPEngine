@@ -20,6 +20,9 @@ namespace SPEngine
 		[KSPField()]
 		public float scaleReference = 0.7f; /* thrust factor of the reference visual model */
 
+		[KSPField()]
+		public float chamberMultiplier = 1.0f;
+
 		private bool firstUpdate = false, secondUpdate = false;
 
 		private RealFuels.ModuleEngineConfigs engine;
@@ -56,7 +59,7 @@ namespace SPEngine
 
 		public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
 		{
-			return design == null || design.broken ? 0 : design.mass - defaultMass;
+			return design == null || design.broken ? 0 : design.mass * chamberMultiplier - defaultMass;
 		}
 
 		public ModifierChangeWhen GetModuleMassChangeWhen()
@@ -133,15 +136,15 @@ namespace SPEngine
 			 */
 			string configName = String.Format("SPEngine-{0}-{1}", design.familyLetter, design.tl);
 			node.AddValue("name", configName);
-			node.AddValue("maxThrust", design.thrust.ToString());
-			node.AddValue("minThrust", (design.thrust * design.minThrottle).ToString());
+			node.AddValue("maxThrust", (design.thrust * chamberMultiplier).ToString());
+			node.AddValue("minThrust", (design.thrust * chamberMultiplier * design.minThrottle).ToString());
 			node.AddValue("ignitions", design.ignitions.ToString());
 			ConfigNode ispn = new ConfigNode();
 			design.isp.Save(ispn);
 			node.AddNode("atmosphereCurve", ispn);
 			node.AddValue("ullage", design.ullage.ToString());
 			node.AddValue("pressureFed", design.pressureFed.ToString());
-			node.AddValue("cost", design.cost.ToString());
+			node.AddValue("cost", (design.cost * chamberMultiplier).ToString());
 			/* Setting this to 0 forces RF to calculate a proper throttle up time.
 			 * Previously it was taking (assumingly large) numbers and setting instant throttle
 			 */
