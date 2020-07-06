@@ -1,0 +1,32 @@
+{
+	"NAME"     : "Simple Procedural Engine",
+	"URL"      : "https://raw.githubusercontent.com/ec429/SPEngine/master/GameData/SPEngine/SPE.version",
+	"DOWNLOAD" : "https://github.com/ec429/SPEngine/releases",
+	"HOMEPAGE"  : "https://github.com/ec429/SPEngine/",
+	"GITHUB" : {
+		"USERNAME"          : "ec429",
+		"REPOSITORY"        : "SPEngine",
+		"ALLOW_PRE_RELEASE" : false
+	},
+	"VERSION": {
+		"MAJOR": "0",
+		"MINOR": "3",
+		"PATCH": "0",
+		"BUILD": "0"
+	},
+	"KSP_VERSION" : {
+		"MAJOR": "1",
+		"MINOR": "8",
+		"PATCH": "1"
+	},
+	"KSP_VERSION_MIN": {
+		"MAJOR": "1",
+		"MINOR": "8",
+		"PATCH": "1"
+	},
+	"KSP_VERSION_MAX": {
+		"MAJOR": "1",
+		"MINOR": "8",
+		"PATCH": "1"
+	}
+}
