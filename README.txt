@@ -52,6 +52,14 @@ In a race, developing the right order of engine designs might be the most
  stages, so you have to have more in the cluster on your first orbital shot,
  and Agathorn eats you.
 
+There are a few parts with a 'chamber multiplier' (8-chamber X-class based on
+ Gamma 8, twin-chamber W-class based on Gamma 2, twin-chamber T-class based on
+ LR87).  These multiply the thrust, mass and cost by the number of chambers in
+ the part, but unfortunately do not yet alter their reliability to account for
+ the clustering, so are not properly balanced.  In all other respects they are
+ equivalent to a cluster of the corresponding single-chamber parts, and exist
+ only for aesthetic purposes.
+
 What are its dependencies?
 --------------------------
 
@@ -62,7 +70,7 @@ The plugin depends directly on RealFuels.  The part configs generally work by
  * D-class (AJ10): SXT
  * E-class (LR91) alternate model: FASA
  * G-class (Agena): VenStockRevamp
- * H-class (SSME): ROEngines
+ * H-class (SSME): RealEngines
  * J-class (J-2): SXT
  * K-class alternate model (H-1): FASA
  * M-class (M-1): FASA
@@ -71,9 +79,10 @@ The plugin depends directly on RealFuels.  The part configs generally work by
  * P-class (Proton): RealEngines
  * X-class (Gamma) alternate model: RealEngines
  * Y-class (NK-15V): RealEngines
-Also, TestFlight is recommended (but not required), as increased burn-time
+Alternatively, ROEngines should provide a complete set.
+Also, TestLite is recommended (but not required), as increased burn-time
  limits and improved reliability are often the biggest upgrades from one tech
- level to the next.  Alternatively, TestLite is also supported.
+ level to the next.  Alternatively, TestFlight is also supported.
 And of course you need ModuleManager.
 
 How do I install it?
