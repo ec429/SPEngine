@@ -11,7 +11,7 @@ UNITY := $(LIBDIR)/UnityEngine.dll,$(LIBDIR)/UnityEngine.ARModule.dll,$(LIBDIR)/
 all: $(OUTDIR)/SPEngine.dll
 
 $(BINDIR)/SPEngine.dll: $(SOURCES)
-	mcs -t:library -nostdlib -r:$(LIBDIR)/Assembly-CSharp.dll,$(UNITY),$(LIBDIR)/System.dll,$(LIBDIR)/System.Core.dll,$(LIBDIR)/mscorlib.dll,$(KSPDTA)/RealFuels/Plugins/RealFuels.dll -out:$@ $(SOURCES)
+	mcs -t:library -nostdlib -r:$(LIBDIR)/Assembly-CSharp.dll,$(UNITY),$(LIBDIR)/System.dll,$(LIBDIR)/System.Core.dll,$(LIBDIR)/mscorlib.dll,$(KSPDTA)/RealFuels/Plugins/RealFuels.dll,$(KSPDTA)/Waterfall/Plugins/Waterfall.dll -out:$@ $(SOURCES)
 
 $(OUTDIR)/SPEngine.dll: $(BINDIR)/SPEngine.dll
 	cp $< $@
