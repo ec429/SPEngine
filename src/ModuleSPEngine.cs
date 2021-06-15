@@ -4,262 +4,370 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Text;
 using System.Linq;
+using ModuleWaterfallFX = global::Waterfall.ModuleWaterfallFX;
 
 namespace SPEngine
 {
-	public class ModuleSPEngine : PartModule, IPartMassModifier
-	{
-		public Guid DesignGuid;
-		[KSPField(guiActive=true, guiActiveEditor=true, guiName="Design")]
-		public string DesignName = "";
-		private Design cacheDesign = null, shareDesign = null;
+    public class ModuleSPEngine : PartModule, IPartMassModifier
+    {
+        private class WFdata
+        {
+            public readonly global::Waterfall.WaterfallEffect fx;
+            public readonly Vector3 meshScale;
+            public readonly Vector3 position;
 
-		[KSPField()]
-		public string familyLetter;
+            public WFdata(global::Waterfall.WaterfallEffect fx, ModuleSPEngine self)
+            {
+                this.fx = fx;
+                this.meshScale = fx.TemplateScaleOffset;
+                this.position = fx.TemplatePositionOffset;
+            }
+        }
 
-		[KSPField()]
-		public float scaleReference = 0.7f; /* thrust factor of the reference visual model */
+        [KSPField(isPersistant = false)]
+        public bool isActive = false;
 
-		[KSPField()]
-		public float chamberMultiplier = 1.0f;
+        public Guid DesignGuid;
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Design")]
+        public string DesignName = "";
+        private Design cacheDesign = null, shareDesign = null;
 
-		private bool firstUpdate = false, secondUpdate = false;
+        [KSPField()]
+        public string familyLetter;
 
-		private RealFuels.ModuleEngineConfigs engine;
+        [KSPField()]
+        public float scaleReference = 0.7f; /* thrust factor of the reference visual model */
 
-		public override string GetInfo()
-		{
-			return "Using the Simple Procedural Engine system.";
-		}
+        [KSPField()]
+        public float chamberMultiplier = 1.0f;
 
-		public Design design {
-			get {
-				if (cacheDesign != null)
-					return cacheDesign;
-				if (Core.Instance == null)
-					return null;
-				if (!Core.Instance.library.designs.ContainsKey(DesignGuid)) {
-					Logging.LogFormat("Design {0} not found; families {1}; share {2}", DesignGuid, Core.Instance.families == null ? "missing" : "found", shareDesign == null ? "missing" : "found");
-					if (shareDesign != null)
-						return shareDesign;
-					if (familyLetter == null || Core.Instance.families == null)
-						return null;
-					if (!Core.Instance.families.ContainsKey(familyLetter[0])) {
-						Logging.Log("Family not found");
-						return null;
-					}
-					Family f = Core.Instance.families[familyLetter[0]];
-					return f.baseDesign;
-				}
-				return Core.Instance.library.designs[DesignGuid];
-			}
-		}
+        private bool firstUpdate = false, secondUpdate = false;
 
-		#region IPartMassModifier implementation
+        private RealFuels.ModuleEngineConfigs engine;
+        private ModuleWaterfallFX[] WFconfigs;
+        private readonly List<WFdata> WForiginal = new List<WFdata>();
 
-		public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
-		{
-			return design == null || design.broken ? 0 : design.mass * chamberMultiplier - defaultMass;
-		}
+        private bool needRestore = false;
+        private bool needInit = true;
 
-		public ModifierChangeWhen GetModuleMassChangeWhen()
-		{
-			return ModifierChangeWhen.FIXED;
-		}
+        public override string GetInfo()
+        {
+            return "Using the Simple Procedural Engine system.";
+        }
 
-		#endregion
+        public Design design
+        {
+            get
+            {
+                if (cacheDesign != null)
+                    return cacheDesign;
+                if (Core.Instance == null)
+                    return null;
+                if (!Core.Instance.library.designs.ContainsKey(DesignGuid))
+                {
+                    Logging.LogFormat("Design {0} not found; families {1}; share {2}", DesignGuid, Core.Instance.families == null ? "missing" : "found", shareDesign == null ? "missing" : "found");
+                    if (shareDesign != null)
+                        return shareDesign;
+                    if (familyLetter == null || Core.Instance.families == null)
+                        return null;
+                    if (!Core.Instance.families.ContainsKey(familyLetter[0]))
+                    {
+                        Logging.Log("Family not found");
+                        return null;
+                    }
+                    Family f = Core.Instance.families[familyLetter[0]];
+                    return f.baseDesign;
+                }
+                return Core.Instance.library.designs[DesignGuid];
+            }
+        }
 
-		private float scaleFactor {
-			get {
-				if (design == null || design.broken)
-					return 1.0f;
-				return design.getScaleFactor(scaleReference) * part.rescaleFactor;
-			}
-		}
+        #region IPartMassModifier implementation
 
-		private void moveNode(AttachNode node, AttachNode baseNode, bool movePart)
-		{
-			var oldPosition = node.position;
+        public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
+        {
+            return design == null || design.broken ? 0 : design.mass * chamberMultiplier - defaultMass;
+        }
 
-			node.position = baseNode.position * scaleFactor;
+        public ModifierChangeWhen GetModuleMassChangeWhen()
+        {
+            return ModifierChangeWhen.FIXED;
+        }
 
-			if (movePart) {
-				if (node.attachedPart == part.parent)
-					part.transform.Translate(oldPosition - node.position, part.transform);
-				else if (node.attachedPart != null)
-					node.attachedPart.transform.Translate(node.position - oldPosition, part.transform);
-			}
-		}
+        #endregion
 
-		private void fixNodes(bool movePart)
-		{
-			var prefab = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab;
+        private float scaleFactor
+        {
+            get
+            {
+                if (design == null || design.broken)
+                    return 1.0f;
+                return design.getScaleFactor(scaleReference) * part.rescaleFactor;
+            }
+        }
 
-			foreach (var node in part.attachNodes) {
-				var nodesWithSameId = part.attachNodes.Where(a => a.id == node.id).ToArray();
-				var idIdx = Array.FindIndex(nodesWithSameId, a => a == node);
-				var baseNodesWithSameId = prefab.attachNodes.Where(a => a.id == node.id).ToArray();
-				if (idIdx < baseNodesWithSameId.Length) {
-					moveNode(node, baseNodesWithSameId[idIdx], movePart);
-				} else {
-					Logging.LogFormat("Error scaling part. Node {0} does not have counterpart in base part.", node.id);
-				}
-			}
+        private void moveNode(AttachNode node, AttachNode baseNode, bool movePart)
+        {
+            var oldPosition = node.position;
 
-			if (part.srfAttachNode != null)
-				moveNode(part.srfAttachNode, prefab.srfAttachNode, movePart);
-		}
+            node.position = baseNode.position * scaleFactor;
 
-		public void applyConfig(bool propagate, bool movePart)
-		{
-			cacheDesign = null;
-			if (design == null)
-				return;
-			if (engine == null) {
-				Logging.LogFormat("No ModuleEngineConfigs found on part!");
-				return;
-			}
-			if (design.check != Design.Constraint.OK) {
-				Logging.LogFormat("Broken design {0}: letter={1}, problem={2}", design.name, design.familyLetter, design.check);
-				return;
-			}
-			cacheDesign = design;
-			DesignName = design.name;
-			Logging.LogFormat("Applying design '{0}': thrust {1}", design.name, design.thrust);
+            if (movePart)
+            {
+                if (node.attachedPart == part.parent)
+                    part.transform.Translate(oldPosition - node.position, part.transform);
+                else if (node.attachedPart != null)
+                    node.attachedPart.transform.Translate(node.position - oldPosition, part.transform);
+            }
+        }
 
-			engine.configs.Clear();
-			ConfigNode node = new ConfigNode();
-			/* Name to match our TestFlight configs.
+        private void fixNodes(bool movePart)
+        {
+            var prefab = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab;
+
+            foreach (var node in part.attachNodes)
+            {
+                var nodesWithSameId = part.attachNodes.Where(a => a.id == node.id).ToArray();
+                var idIdx = Array.FindIndex(nodesWithSameId, a => a == node);
+                var baseNodesWithSameId = prefab.attachNodes.Where(a => a.id == node.id).ToArray();
+                if (idIdx < baseNodesWithSameId.Length)
+                {
+                    moveNode(node, baseNodesWithSameId[idIdx], movePart);
+                }
+                else
+                {
+                    Logging.LogFormat("Error scaling part. Node {0} does not have counterpart in base part.", node.id);
+                }
+            }
+
+            if (part.srfAttachNode != null)
+                moveNode(part.srfAttachNode, prefab.srfAttachNode, movePart);
+        }
+
+        public void applyConfig(bool propagate, bool movePart)
+        {
+            cacheDesign = null;
+            if (design == null)
+                return;
+            if (engine == null)
+            {
+                Logging.LogFormat("No ModuleEngineConfigs found on part!");
+                return;
+            }
+            if (design.check != Design.Constraint.OK)
+            {
+                Logging.LogFormat("Broken design {0}: letter={1}, problem={2}", design.name, design.familyLetter, design.check);
+                return;
+            }
+            cacheDesign = design;
+            DesignName = design.name;
+            Logging.LogFormat("Applying design '{0}': thrust {1}", design.name, design.thrust);
+
+            engine.configs.Clear();
+            ConfigNode node = new ConfigNode();
+            /* Name to match our TestFlight configs.
 			 * Per TechLevel, not per Design, because the latter
 			 * would mean constructing TestFlight configs at run-
 			 * time which I'd rather not have to do.
 			 */
-			string configName = String.Format("SPEngine-{0}-{1}", design.familyLetter, design.tl);
-			node.AddValue("name", configName);
-			node.AddValue("maxThrust", (design.thrust * chamberMultiplier).ToString());
-			node.AddValue("minThrust", (design.thrust * chamberMultiplier * design.minThrottle).ToString());
-			node.AddValue("ignitions", design.ignitions.ToString());
-			ConfigNode ispn = new ConfigNode();
-			design.isp.Save(ispn);
-			node.AddNode("atmosphereCurve", ispn);
-			node.AddValue("ullage", design.ullage.ToString());
-			node.AddValue("pressureFed", design.pressureFed.ToString());
-			node.AddValue("cost", (design.cost * chamberMultiplier).ToString());
-			/* Setting this to 0 forces RF to calculate a proper throttle up time.
+            string configName = String.Format("SPEngine-{0}-{1}", design.familyLetter, design.tl);
+            node.AddValue("name", configName);
+            node.AddValue("maxThrust", (design.thrust * chamberMultiplier).ToString());
+            node.AddValue("minThrust", (design.thrust * chamberMultiplier * design.minThrottle).ToString());
+            node.AddValue("ignitions", design.ignitions.ToString());
+            ConfigNode ispn = new ConfigNode();
+            design.isp.Save(ispn);
+            node.AddNode("atmosphereCurve", ispn);
+            node.AddValue("ullage", design.ullage.ToString());
+            node.AddValue("pressureFed", design.pressureFed.ToString());
+            node.AddValue("cost", (design.cost * chamberMultiplier).ToString());
+            /* Setting this to 0 forces RF to calculate a proper throttle up time.
 			 * Previously it was taking (assumingly large) numbers and setting instant throttle
 			 */
-			node.AddValue("throttleResponseRate", 0);
-			for (int i = 0; i < design.propellants.Count; i++)
-				node.AddNode(design.propellants[i]);
-			for (int i = 0; i < design.ignitorResources.Count; i++)
-				node.AddNode(design.ignitorResources[i]);
-			engine.configs.Add(node);
-			engine.SetConfiguration(configName);
-			/* Scale the visual model, nodes and drag cubes */
-			var prefab = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab;
-			Transform xform = part.partTransform.Find("model"), preform = prefab.partTransform;
-			xform.localScale = preform.localScale * scaleFactor;
-			xform.hasChanged = true;
-			fixNodes(movePart);
-			/* TODO drag cubes.  Somehow.
+            node.AddValue("throttleResponseRate", 0);
+            for (int i = 0; i < design.propellants.Count; i++)
+                node.AddNode(design.propellants[i]);
+            for (int i = 0; i < design.ignitorResources.Count; i++)
+                node.AddNode(design.ignitorResources[i]);
+            engine.configs.Add(node);
+            engine.SetConfiguration(configName);
+            /* Scale the visual model, nodes and drag cubes */
+            var prefab = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab;
+            Transform xform = part.partTransform.Find("model"), preform = prefab.partTransform;
+            xform.localScale = preform.localScale * scaleFactor;
+            xform.hasChanged = true;
+            fixNodes(movePart);
+            /* TODO drag cubes.  Somehow.
 			 * DRVeyl says to do what https://github.com/KSP-RO/ProceduralParts/blob/3466a39/Source/ProceduralPart.cs#L698-L725 does.
 			 */
-			if (propagate && design != design.family.baseDesign)
-				UpdateSymmetryCounterparts();
-		}
+            /* Scale Waterfall effects */
+            this.needRestore = true;
+            if (propagate && design != design.family.baseDesign)
+                UpdateSymmetryCounterparts();
+        }
 
-		public void applyConfig()
-		{
-			applyConfig(true, true);
-		}
+        public void applyConfig()
+        {
+            applyConfig(true, true);
+        }
 
-		public override void OnAwake()
-		{
-			engine = part.FindModuleImplementing<RealFuels.ModuleEngineConfigs>();
-			applyConfig(false, false);
-		}
+        private void InitModule()
+        {
+            this.WFconfigs = this.part.Modules.GetModules<ModuleWaterfallFX>().ToArray();
+            this.enabled = false;
+            foreach (ModuleWaterfallFX m in this.WFconfigs)
+                this.enabled |= m.enabled;
+            if (!this.enabled) return;
+        }
 
-		public void Update()
-		{
-			if (!firstUpdate) {
-				firstUpdate = true;
-			} else if (!secondUpdate) {
-				applyConfig(false, false);
-				secondUpdate = true;
-			}
-		}
+        private void InitData()
+        {
+            this.WForiginal.Clear();
+            foreach (ModuleWaterfallFX m in this.WFconfigs)
+                foreach (global::Waterfall.WaterfallEffect fx in m.FX)
+                    this.WForiginal.Add(new WFdata(fx, this));
+        }
 
-		public override void OnStart(StartState state)
-		{
-			base.OnStart(state);
-			this.OnAwake();
-		}
+        private void UpdateWF(float factor)
+        {
+            if (null == this.WFconfigs) return;
 
-		public override void OnCopy(PartModule fromModule)
-		{
-			ModuleSPEngine from = fromModule as ModuleSPEngine;
-			DesignGuid = from.DesignGuid;
-			base.OnCopy(fromModule);
-			OnAwake();
-		}
+            foreach (WFdata data in this.WForiginal)
+                this.ScaleWF(data, factor);
+        }
 
-		public override void OnLoad(ConfigNode node)
-		{
-			base.OnLoad(node);
-			if (node.HasValue("DesignGuid")) {
-				try {
-					DesignGuid = new Guid(node.GetValue("DesignGuid"));
-				} catch (Exception ex) {
-					// we failed to load it, so we're a broken part now.  Nothing we can do about it, so let's log and swallow the exception :(
-					Logging.LogException(ex);
-				}
-			}
-			if (node.HasNode("share"))
-			{
-				try {
-					shareDesign = new Design(node.GetNode("share"));
-					shareDesign.tooled = false;
-				} catch (Exception ex) {
-					// we failed to load our shareDesign.  Sorry.
-					Logging.LogException(ex);
-					shareDesign = null;
-				}
-			}
-			this.OnAwake();
-		}
-		public override void OnSave(ConfigNode node)
-		{
-			base.OnSave(node);
-			node.AddValue("DesignGuid", DesignGuid.ToString());
-			if (design != null) {
-				// record Design data to allow sharing vessel files
-				ConfigNode share = node.AddNode("share");
-				design.Save(share);
-			}
-		}
+        private void ScaleWF(WFdata data, float factor)
+        {
+            data.fx.ApplyTemplateOffsets(data.position, data.fx.TemplateRotationOffset, data.meshScale * factor);
+        }
 
-		virtual public void UpdateSymmetryCounterparts()
-		{
-			if (part.symmetryCounterparts == null)
-				return;
 
-			int pCount = part.symmetryCounterparts.Count;
-			for (int j = 0; j < pCount; j++)
-			{
-				if (part.symmetryCounterparts[j] == part)
-					continue;
-				/* Assumes each part only has one ModuleSPEngine. */
-				ModuleSPEngine engine = part.symmetryCounterparts[j].FindModuleImplementing<ModuleSPEngine>();
-				engine.DesignGuid = DesignGuid;
-				engine.applyConfig(false, true);
-			}
-		}
+        public override void OnAwake()
+        {
+            engine = part.FindModuleImplementing<RealFuels.ModuleEngineConfigs>();
+            applyConfig(false, false);
+        }
 
-		[KSPEvent(name = "EventEdit", guiName = "Configure", guiActiveEditor = true)]
-		public void EventEdit()
-		{
-			Core.Instance.EditPart(this);
-		}
-	}
+        public void Update()
+        {
+            if (!firstUpdate)
+            {
+                firstUpdate = true;
+            }
+            else if (!secondUpdate)
+            {
+                applyConfig(false, false);
+                secondUpdate = true;
+            }
+
+            if (this.needInit)
+            {
+                this.InitData();
+                this.needInit = false;
+            }
+
+            if (this.needRestore)
+            {
+                this.UpdateWF(this.scaleFactor);
+                this.needRestore = false;
+            }
+        }
+
+        public override void OnStart(StartState state)
+        {
+            base.OnStart(state);
+            this.OnAwake();
+
+            if (null == this.WFconfigs) this.InitModule();
+
+            this.needInit = true;
+            this.needRestore = true;
+        }
+
+        public override void OnCopy(PartModule fromModule)
+        {
+            ModuleSPEngine from = fromModule as ModuleSPEngine;
+            DesignGuid = from.DesignGuid;
+            base.OnCopy(fromModule);
+            OnAwake();
+
+            if (null == this.WFconfigs) this.InitModule();
+
+            this.needRestore = true;
+        }
+
+        public override void OnLoad(ConfigNode node)
+        {
+            base.OnLoad(node);
+            if (node.HasValue("DesignGuid"))
+            {
+                try
+                {
+                    DesignGuid = new Guid(node.GetValue("DesignGuid"));
+                }
+                catch (Exception ex)
+                {
+                    // we failed to load it, so we're a broken part now.  Nothing we can do about it, so let's log and swallow the exception :(
+                    Logging.LogException(ex);
+                }
+            }
+            if (node.HasNode("share"))
+            {
+                try
+                {
+                    shareDesign = new Design(node.GetNode("share"));
+                    shareDesign.tooled = false;
+                }
+                catch (Exception ex)
+                {
+                    // we failed to load our shareDesign.  Sorry.
+                    Logging.LogException(ex);
+                    shareDesign = null;
+                }
+            }
+            this.OnAwake();
+
+            if (null == this.WFconfigs)
+            {
+                this.InitModule();
+                this.needInit = true;
+            }
+            this.needRestore = true;
+        }
+        public override void OnSave(ConfigNode node)
+        {
+            base.OnSave(node);
+            node.AddValue("DesignGuid", DesignGuid.ToString());
+            if (design != null)
+            {
+                // record Design data to allow sharing vessel files
+                ConfigNode share = node.AddNode("share");
+                design.Save(share);
+            }
+        }
+
+        virtual public void UpdateSymmetryCounterparts()
+        {
+            if (part.symmetryCounterparts == null)
+                return;
+
+            int pCount = part.symmetryCounterparts.Count;
+            for (int j = 0; j < pCount; j++)
+            {
+                if (part.symmetryCounterparts[j] == part)
+                    continue;
+                /* Assumes each part only has one ModuleSPEngine. */
+                ModuleSPEngine engine = part.symmetryCounterparts[j].FindModuleImplementing<ModuleSPEngine>();
+                engine.DesignGuid = DesignGuid;
+                engine.applyConfig(false, true);
+            }
+        }
+
+        [KSPEvent(name = "EventEdit", guiName = "Configure", guiActiveEditor = true)]
+        public void EventEdit()
+        {
+            Core.Instance.EditPart(this);
+        }
+    }
 }
 
