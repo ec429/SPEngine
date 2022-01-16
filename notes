@@ -16,6 +16,7 @@ G: Pump-fed hypergolic vacuum engine.  Examples include Agena (Bell XLR81).
 H: Staged-combustion hydrolox sustainer engine.  E.g. RS25.
 J: Large hydrolox vacuum engine.  E.g. J-2.
 K: Kerolox atmospheric engine (not huge).  Examples include X405, LR79/89/H-1, LR87 (Titan I), Merlin1.
+k: Kerolox vernier engine.  Examples include LR101.
 L: Kerolox sustainer engine.  Examples include LR105, RD-108.
 M: Huge hydrolox vacuum engine.  E.g. M-1.
 N: Large staged-combustion kerolox engine.  E.g. NK series.
