@@ -73,15 +73,17 @@ namespace SPEngine
 			get {
 				if (design == null || design.broken)
 					return 1.0f;
-				return design.getScaleFactor(scaleReference) * part.rescaleFactor;
+				return design.getScaleFactor(scaleReference);
 			}
 		}
 
 		private void moveNode(AttachNode node, AttachNode baseNode, bool movePart)
 		{
+			/* XXX this interacts poorly with B9PS */
 			var oldPosition = node.position;
 
 			node.position = baseNode.position * scaleFactor;
+			node.originalPosition = baseNode.originalPosition * scaleFactor;
 
 			if (movePart) {
 				if (node.attachedPart == part.parent)
@@ -158,7 +160,7 @@ namespace SPEngine
 			/* Scale the visual model, nodes and drag cubes */
 			var prefab = PartLoader.getPartInfoByName(part.partInfo.name).partPrefab;
 			Transform xform = part.partTransform.Find("model"), preform = prefab.partTransform;
-			xform.localScale = preform.localScale * scaleFactor;
+			xform.localScale = preform.localScale * scaleFactor * part.rescaleFactor;
 			xform.hasChanged = true;
 			fixNodes(movePart);
 			/* TODO drag cubes.  Somehow.
