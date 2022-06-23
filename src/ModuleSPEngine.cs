@@ -10,6 +10,7 @@ namespace SPEngine
 	public class ModuleSPEngine : PartModule, IPartMassModifier
 	{
 		public Guid DesignGuid;
+		private Guid noGuid;
 		[KSPField(guiActive=true, guiActiveEditor=true, guiName="Design")]
 		public string DesignName = "";
 		private Design cacheDesign = null, shareDesign = null;
@@ -39,7 +40,9 @@ namespace SPEngine
 				if (Core.Instance == null)
 					return null;
 				if (!Core.Instance.library.designs.ContainsKey(DesignGuid)) {
-					Logging.LogFormat("Design {0} not found; families {1}; share {2}", DesignGuid, Core.Instance.families == null ? "missing" : "found", shareDesign == null ? "missing" : "found");
+					if (DesignGuid != noGuid)
+						Logging.LogFormat("Design {0} not found; families {1}; share {2}", DesignGuid, Core.Instance.families == null ? "missing" : "found", shareDesign == null ? "missing" : "found");
+					noGuid = DesignGuid;
 					if (shareDesign != null)
 						return shareDesign;
 					if (familyLetter == null || Core.Instance.families == null)
