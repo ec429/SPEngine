@@ -58,6 +58,19 @@ namespace SPEngine
 			}
 		}
 
+		public virtual bool Validate(out string validationError, out bool canBeResolved, out float costToResolve, out string techToResolve)
+		{
+			return design.Validate(out validationError, out canBeResolved, out costToResolve, out techToResolve);
+		}
+
+		public virtual bool ResolveValidationError()
+		{
+			design.Unlock();
+			if (!design.unlocked) return false;
+			design.Tool();
+			return design.tooled;
+		}
+
 		#region IPartMassModifier implementation
 
 		public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
@@ -124,8 +137,8 @@ namespace SPEngine
 				Logging.LogFormat("No ModuleEngineConfigs found on part!");
 				return;
 			}
-			if (design.check != Design.Constraint.OK) {
-				Logging.LogFormat("Broken design {0}: letter={1}, problem={2}", design.name, design.familyLetter, design.check);
+			if (design.broken) {
+				Logging.LogFormat("Broken design {0}: letter={1}, problem={2}", design.name, design.familyLetter);
 				return;
 			}
 			cacheDesign = design;

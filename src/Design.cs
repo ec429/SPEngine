@@ -85,6 +85,11 @@ namespace SPEngine
 
 		public enum Constraint { OK, BROKEN, TECHLEVEL, MINTHRUST, MAXTHRUST, IGNITIONS, UNLOCK, TECH };
 
+		public bool unlocked {
+			get {
+				return !broken && tl < family.unlocked;
+			}
+		}
 		public Constraint check { // is this Design within the Family's constraints?
 			get {
 				if (broken)
@@ -105,8 +110,41 @@ namespace SPEngine
 			}
 		}
 
+		public virtual bool Validate(out string validationError, out bool canBeResolved, out float costToResolve, out string techToResolve)
+		{
+			validationError = null;
+			canBeResolved = false;
+			costToResolve = 0;
+			techToResolve = null;
+
+			switch (check) {
+			case Constraint.OK:
+				if (tooled)
+					return true;
+				costToResolve = toolCost;
+				validationError = "pay tooling cost";
+				canBeResolved = true;
+				break;
+			case Constraint.TECH:
+				techToResolve = techRequired;
+				validationError = $"unlock tech {ResearchAndDevelopment.GetTechnologyTitle(techToResolve)}";
+				break;
+			case Constraint.UNLOCK:
+				costToResolve = unlockCost;
+				validationError = "pay entry cost";
+				canBeResolved = true;
+				break;
+			default:
+				validationError = "broken or invalid Design";
+				break;
+			}
+			return false;
+		}
+
 		public void Tool()
 		{
+			if (check != Constraint.OK)
+				return;
 			if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
 				Funding.Instance.AddFunds(-toolCost, TransactionReasons.RnDPartPurchase);
 			tooled = true;
@@ -174,7 +212,7 @@ namespace SPEngine
 			get {
 				if (broken)
 					return float.NaN;
-				return tooledCost * ((tooled && tl < family.unlocked) ? 1f : 1000f);
+				return tooledCost;// * ((tooled && tl < family.unlocked) ? 1f : 1000f);
 			}
 		}
 		public float origToolCost {

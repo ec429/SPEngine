@@ -59,28 +59,28 @@ namespace SPEngine.UI
 					GUILayout.Label(ullageContent);
 				if (currentDesign.pressureFed)
 					GUILayout.Label(pressureFedContent);
+				Design dup = currentDesign.checkDuplicate();
+				if (currentDesign.name.Equals("")) {
+					GUILayout.Label("Choose name");
+				} else if (dup != null) {
+					if (dup.hidden) {
+						if (GUILayout.Button(String.Format("Duplicates {0}", dup.name)))
+							dup.hidden = false;
+					} else {
+						GUILayout.Label(String.Format("Duplicates {0}", dup.name));
+					}
+				} else if (GUILayout.Button("Apply")) {
+					Core.Instance.library.AddDesign(currentDesign);
+					module.DesignGuid = currentDesign.guid;
+					module.applyConfig();
+					/* Notify the editor that we changed the module's Design */
+					if (EditorLogic.fetch != null && EditorLogic.fetch.ship != null && HighLogic.LoadedSceneIsEditor)
+						GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+					currentDesign = new Design(currentDesign); // decouple & get fresh guid
+				}
 				Design.Constraint check = currentDesign.check;
 				switch (check) {
 				case Design.Constraint.OK:
-					Design dup = currentDesign.checkDuplicate();
-					if (currentDesign.name.Equals("")) {
-						GUILayout.Label("Choose name");
-					} else if (dup != null) {
-						if (dup.hidden) {
-							if (GUILayout.Button(String.Format("Duplicates {0}", dup.name)))
-								dup.hidden = false;
-						} else {
-							GUILayout.Label(String.Format("Duplicates {0}", dup.name));
-						}
-					} else if (GUILayout.Button("Apply")) {
-						Core.Instance.library.AddDesign(currentDesign);
-						module.DesignGuid = currentDesign.guid;
-						module.applyConfig();
-						/* Notify the editor that we changed the module's Design */
-						if (EditorLogic.fetch != null && EditorLogic.fetch.ship != null && HighLogic.LoadedSceneIsEditor)
-							GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
-						currentDesign = new Design(currentDesign); // decouple & get fresh guid
-					}
 					break;
 				case Design.Constraint.UNLOCK:
 					if (currentDesign.unlockCost == 0f) {
@@ -94,7 +94,8 @@ namespace SPEngine.UI
 					GUILayout.Label(String.Format("{0:F0}f", currentDesign.unlockCost));
 					break;
 				case Design.Constraint.TECH:
-					GUILayout.Label(String.Format("Requires {0}", currentDesign.techRequired));
+					GUILayout.Label(new GUIContent(String.Format("Requires {0}", currentDesign.techRequired),
+								       String.Format("Unlock cost {0:F0}f", currentDesign.unlockCost)));
 					break;
 				default:
 					GUILayout.Label(check.ToString());
