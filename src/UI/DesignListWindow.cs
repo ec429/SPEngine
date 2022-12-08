@@ -60,10 +60,6 @@ namespace SPEngine.UI
 						if (d.tl + 1 < d.family.techLevels.Count) {
 							if (d.upgradeTo != Guid.Empty) {
 								GUILayout.Label(String.Format("Upgraded: {0}", d.upgradeToName));
-							} else if (!d.family.haveTechRequired(d.tl + 1)) {
-								GUILayout.Label(String.Format("Upgrade: requires {0}", d.family.getTechRequired(d.tl + 1)));
-							} else if (d.tl + 1 >= d.family.unlocked) {
-								GUILayout.Label(String.Format("Upgrade: unlock TL {0}", d.tl + 2));
 							} else {
 								if (GUILayout.Button("Upgrade")) {
 									Design up = new Design(d, d.tl + 1);
@@ -84,6 +80,11 @@ namespace SPEngine.UI
 										renaming = up.guid; // select this design for renaming
 										select = up; // apply this design to the module if any
 									}
+								}
+								if (!d.family.haveTechRequired(d.tl + 1)) {
+									GUILayout.Label(String.Format(" requires {0}", d.family.getTechRequired(d.tl + 1)));
+								} else if (d.tl + 1 >= d.family.unlocked) {
+									GUILayout.Label(String.Format(" unlock TL {0}", d.tl + 2));
 								}
 							}
 						}
