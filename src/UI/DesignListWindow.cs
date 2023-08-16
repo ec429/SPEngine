@@ -83,6 +83,8 @@ namespace SPEngine.UI
 								}
 								if (!d.family.haveTechRequired(d.tl + 1)) {
 									GUILayout.Label(String.Format(" requires {0}", d.family.getTechRequired(d.tl + 1)));
+								} else if (!d.family.havePuRequired(d.tl + 1)) {
+									GUILayout.Label(String.Format(" unlock PartUpgrade in R&D"));
 								} else if (d.tl + 1 >= d.family.unlocked) {
 									GUILayout.Label(String.Format(" unlock TL {0}", d.tl + 2));
 								}

@@ -82,6 +82,9 @@ namespace SPEngine.UI
 				switch (check) {
 				case Design.Constraint.OK:
 					break;
+				case Design.Constraint.PUNLOCK:
+					GUILayout.Label("Unlock in R&D");
+					break;
 				case Design.Constraint.UNLOCK:
 					if (currentDesign.unlockCost == 0f) {
 						GUILayout.Label("Unlocking");

@@ -51,6 +51,8 @@ namespace SPEngine.UI
 						GUILayout.Label(pressureFedContent);
 					if (!f.haveTechRequired(tl)) {
 						GUILayout.Label(String.Format("Requires {0}", f.getTechRequired(tl)));
+					} else if (!f.havePuRequired(tl)) {
+						GUILayout.Label("Unlock in R&D");
 					} else if (tl >= f.unlocked) {
 						if (f.unlockCost(tl) == 0f) {
 							GUILayout.Label("Unlocking");

@@ -9,6 +9,7 @@ namespace SPEngine
 	public class TechLevel
 	{
 		public string techRequired;
+		public string puRequired;
 		public List<string> entryCosts;
 		public float maxThrust;
 		public float minThrottle = 1f;
@@ -25,6 +26,7 @@ namespace SPEngine
 		public TechLevel(ConfigNode node)
 		{
 			techRequired = node.GetValue("techRequired");
+			puRequired = node.GetValue("puRequired");
 			entryCosts = node.GetValues("entryCost").ToList();
 			try {
 				maxThrust = float.Parse(node.GetValue("maxThrust"));
@@ -130,6 +132,8 @@ namespace SPEngine
 				return true;
 			if (entryCost > Funding.Instance.Funds)
 				return false;
+			if (puRequired != null && !PartUpgradeManager.Handler.IsUnlocked(puRequired))
+				return false;
 			RealFuels.EntryCostManager ecm = RealFuels.EntryCostManager.Instance;
 			for (int i = 0; i < entryCosts.Count; i++) {
 				float val;
@@ -154,6 +158,7 @@ namespace SPEngine
 		public float minTf = 0.2f;
 		public int minIgnitions = 0;
 		public List<TechLevel> techLevels = new List<TechLevel>();
+		public bool usesPartUpgrades = false;
 		public int unlocked = 0;
 		public Design baseDesign;
 
@@ -162,12 +167,16 @@ namespace SPEngine
 			letter = node.GetValue("letter")[0];
 			try {
 				description = node.GetValue("description");
+				if (node.HasValue("usesPartUpgrades"))
+					usesPartUpgrades = bool.Parse(node.GetValue("usesPartUpgrades"));
 				if (node.HasValue("minTf"))
 					minTf = float.Parse(node.GetValue("minTf"));
 				if (node.HasValue("minIgnitions"))
 					minIgnitions = int.Parse(node.GetValue("minIgnitions"));
 				foreach (ConfigNode tn in node.GetNodes("TechLevel"))
 					techLevels.Add(new TechLevel(tn));
+				if (usesPartUpgrades)
+					unlocked = techLevels.Count();
 				baseDesign = new Design(this, 0);
 			} catch (Exception ex) {
 				Logging.LogFormat("Error occurred in family {0}, TL {1}", letter, techLevels.Count);
@@ -179,6 +188,18 @@ namespace SPEngine
 		{
 			if (!check(tl))
 				return;
+			if (usesPartUpgrades) {
+				/* I can't quite figure out how to unlock a
+				 * PartUpgrade from the VAB and have all the
+				 * right RP-1 unlock credit stuff happen
+				 * automagically, so for now require players
+				 * to go into R&D and do it by hand like
+				 * some kind of peasant :(
+				 */
+				if (havePuRequired(tl))
+					techLevels[tl].Unlock();
+				return;
+			}
 			while (unlocked <= tl) {
 				if (!haveTechRequired(unlocked))
 					return;
@@ -296,6 +317,21 @@ namespace SPEngine
 			if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
 				return true;
 			return ResearchAndDevelopment.GetTechnologyState(tech) == RDTech.State.Available;
+		}
+		public string getPuRequired(int tl)
+		{
+			if (!check(tl))
+				return null;
+			return techLevels[tl].puRequired;
+		}
+		public bool havePuRequired(int tl)
+		{
+			string pu = getPuRequired(tl);
+			if (pu == null || pu.Equals(""))
+				return true;
+			if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX)
+				return true;
+			return PartUpgradeManager.Handler.IsUnlocked(pu);
 		}
 		public bool getUllage(int tl)
 		{

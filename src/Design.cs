@@ -83,11 +83,11 @@ namespace SPEngine
 			return existingDesign;
 		}
 
-		public enum Constraint { OK, BROKEN, TECHLEVEL, MINTHRUST, MAXTHRUST, IGNITIONS, UNLOCK, TECH };
+		public enum Constraint { OK, BROKEN, TECHLEVEL, MINTHRUST, MAXTHRUST, IGNITIONS, PUNLOCK, UNLOCK, TECH };
 
 		public bool unlocked {
 			get {
-				return !broken && tl < family.unlocked;
+				return !broken && tl < family.unlocked && family.havePuRequired(tl);
 			}
 		}
 		public Constraint check { // is this Design within the Family's constraints?
@@ -98,6 +98,8 @@ namespace SPEngine
 					return Constraint.TECHLEVEL;
 				if (!family.haveTechRequired(tl))
 					return Constraint.TECH;
+				if (!family.havePuRequired(tl))
+					return Constraint.PUNLOCK;
 				if (tl >= family.unlocked)
 					return Constraint.UNLOCK;
 				if (thrust < family.getMinThrust(tl))
@@ -128,6 +130,9 @@ namespace SPEngine
 			case Constraint.TECH:
 				techToResolve = techRequired;
 				validationError = $"unlock tech {ResearchAndDevelopment.GetTechnologyTitle(techToResolve)}";
+				break;
+			case Constraint.PUNLOCK:
+				validationError = "unlock PartUpgrade in R&D";
 				break;
 			case Constraint.UNLOCK:
 				costToResolve = unlockCost;

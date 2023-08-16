@@ -37,6 +37,8 @@ Z: Throttleable hypergolic vacuum engine.  E.g. LMDE.
 
 Still to configure: CU
 Letters not used: Ibcdefghijklmopqrstuvwxz
+I should probably add partupgrades to the techtree (+flav text).
+Need to find out how to integrate with RP-1's unlock credit system.  Looks like I'd need to turn techlevels into partupgrades.
 
 
 Tech Tables:
