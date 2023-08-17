@@ -175,8 +175,6 @@ namespace SPEngine
 					minIgnitions = int.Parse(node.GetValue("minIgnitions"));
 				foreach (ConfigNode tn in node.GetNodes("TechLevel"))
 					techLevels.Add(new TechLevel(tn));
-				if (usesPartUpgrades)
-					unlocked = techLevels.Count();
 				baseDesign = new Design(this, 0);
 			} catch (Exception ex) {
 				Logging.LogFormat("Error occurred in family {0}, TL {1}", letter, techLevels.Count);
@@ -188,18 +186,6 @@ namespace SPEngine
 		{
 			if (!check(tl))
 				return;
-			if (usesPartUpgrades) {
-				/* I can't quite figure out how to unlock a
-				 * PartUpgrade from the VAB and have all the
-				 * right RP-1 unlock credit stuff happen
-				 * automagically, so for now require players
-				 * to go into R&D and do it by hand like
-				 * some kind of peasant :(
-				 */
-				if (havePuRequired(tl))
-					techLevels[tl].Unlock();
-				return;
-			}
 			while (unlocked <= tl) {
 				if (!haveTechRequired(unlocked))
 					return;
@@ -208,6 +194,14 @@ namespace SPEngine
 					return;
 				unlocked += 1;
 			}
+			/* usesPartUpgrades:
+			 * I can't quite figure out how to unlock a
+			 * PartUpgrade from the VAB and have all the
+			 * right RP-1 unlock credit stuff happen
+			 * automagically, so for now require players
+			 * to go into R&D and do it by hand like
+			 * some kind of peasant :(
+			 */
 		}
 
 		public float unlockCost(int tl)
