@@ -27,6 +27,18 @@ namespace SPEngine
 		{
 			techRequired = node.GetValue("techRequired");
 			puRequired = node.GetValue("puRequired");
+			if (techRequired == null && puRequired != null) {
+				PartUpgradeHandler.Upgrade pu = PartUpgradeManager.Handler.GetUpgrade(puRequired);
+				if (pu == null) {
+					Logging.LogFormat("No such Upgrade {0}", puRequired);
+				} else {
+					/* This isn't really needed for
+					 * handling unlocks, but it does mean
+					 * the UI displays more useful info
+					 */
+					techRequired = pu.techRequired;
+				}
+			}
 			entryCosts = node.GetValues("entryCost").ToList();
 			try {
 				maxThrust = float.Parse(node.GetValue("maxThrust"));
