@@ -23,7 +23,7 @@ namespace SPEngine
 		public List<ConfigNode> propellants;
 		public List<ConfigNode> ignitorResources;
 
-		public TechLevel(ConfigNode node)
+		public TechLevel(ConfigNode node, Family f)
 		{
 			techRequired = node.GetValue("techRequired");
 			puRequired = node.GetValue("puRequired");
@@ -40,6 +40,18 @@ namespace SPEngine
 				}
 			}
 			entryCosts = node.GetValues("entryCost").ToList();
+			if (f.usesPartUpgrades) {
+				/* verify conversion */
+				if (puRequired == null)
+					Logging.LogFormat("Missing puRequired on TechLevel for {0}-class; techRequired = {1}",
+							  f.letter, techRequired);
+				else if (PartUpgradeManager.Handler.GetUpgrade(puRequired) == null)
+					Logging.LogFormat("Missing PARTUPGRADE[{0}] for TechLevel",
+							  puRequired);
+				if (entryCosts.Count() != 0)
+					Logging.LogFormat("TechLevel {0} for {1}-class has old-style entryCosts",
+							  puRequired, f.letter);
+			}
 			try {
 				maxThrust = float.Parse(node.GetValue("maxThrust"));
 			} catch {
@@ -186,7 +198,7 @@ namespace SPEngine
 				if (node.HasValue("minIgnitions"))
 					minIgnitions = int.Parse(node.GetValue("minIgnitions"));
 				foreach (ConfigNode tn in node.GetNodes("TechLevel"))
-					techLevels.Add(new TechLevel(tn));
+					techLevels.Add(new TechLevel(tn, this));
 				baseDesign = new Design(this, 0);
 			} catch (Exception ex) {
 				Logging.LogFormat("Error occurred in family {0}, TL {1}", letter, techLevels.Count);
