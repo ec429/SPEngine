@@ -109,8 +109,10 @@ namespace SPEngine
 			Instance = null;
 			try {
 				GameEvents.onGUIApplicationLauncherReady.Remove(this.OnGuiAppLauncherReady);
-				if (button != null)
+				if (button != null) {
+					GameEvents.onGameSceneLoadRequested.Remove(this.OnSceneChange);
 					ApplicationLauncher.Instance.RemoveModApplication(button);
+				}
 			} catch (Exception ex) {
 				Logging.LogException(ex);
 			}
