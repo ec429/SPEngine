@@ -320,7 +320,17 @@ namespace SPEngine
 				Logging.LogFormat("Failed to load family '{0}'", familyLetter);
 				family = null;
 			}
-			tl = int.Parse(node.GetValue("tl"));
+			if (node.HasValue("tl")) {
+				tl = int.Parse(node.GetValue("tl"));
+			} else if (family != null) {
+				string tlName = node.GetValue("tlName");
+				tl = family.techLevels.FindIndex(t => t.puRequired == tlName);
+				if (tl < 0) // broken
+					Logging.LogWarningFormat("tlName {0} not found for family {1}",
+								 tlName, familyLetter);
+			} else {
+				tl = -1; // broken
+			}
 			thrust = float.Parse(node.GetValue("thrust"));
 			ignitions = int.Parse(node.GetValue("ignitions"));
 			tooled = bool.Parse(node.GetValue("tooled"));
@@ -337,7 +347,10 @@ namespace SPEngine
 			node.AddValue("name", name);
 			node.AddValue("guid", guid.ToString());
 			node.AddValue("family", familyLetter.ToString());
-			node.AddValue("tl", tl.ToString());
+			if (family.getPuRequired(tl) != null)
+				node.AddValue("tlName", family.getPuRequired(tl));
+			else
+				node.AddValue("tl", tl.ToString());
 			node.AddValue("thrust", thrust.ToString());
 			node.AddValue("ignitions", ignitions.ToString());
 			node.AddValue("tooled", tooled.ToString());
