@@ -156,8 +156,6 @@ namespace SPEngine
 				return true;
 			if (entryCost > Funding.Instance.Funds)
 				return false;
-			if (puRequired != null && !PartUpgradeManager.Handler.IsUnlocked(puRequired))
-				return false;
 			RealFuels.EntryCostManager ecm = RealFuels.EntryCostManager.Instance;
 			for (int i = 0; i < entryCosts.Count; i++) {
 				float val;
