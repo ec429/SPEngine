@@ -8,7 +8,7 @@ Classes:
 A: Alcohol/LOx atmospheric engine (US style).  Primitive, but less so than Russian-style.  Examples include A4, A6, XLR11 (Bell X-1).
 a: Alcohol/LOx atmospheric engine (Russian style).  Cheap'n'easy for the low TLs.  Examples include RD-100 series.
 B: Small hypergolic sustainer engine.  Examples include Aerobee and very early AJ-10s.
-C: Small methalox vacuum engine.  E.g. RL10-CH₄.
+C: Small methalox vacuum engine.  E.g. RL10-CH₄.  But most of the actual research was done with Flox/CH₄, do we go down that route instead?
 D: Pressure-fed hypergolic vacuum engine.  Examples include AJ10 family (Able, Delta, Apollo SPS...).
 E: Large hypergolic vacuum engine.  E.g. LR91 (Titan II onwards).
 F: Huge kerolox atmospheric engine.  Examples include E-1, F-1.
@@ -37,3 +37,5 @@ Z: Throttleable hypergolic vacuum engine.  E.g. LMDE.
 
 Still to configure: CU
 Letters not used: Ibcdefghijklmopqrstuvwxz
+
+TODO: maybe extend X class with earlier examples based on Seymonsters' UK Rockets mod (Sprite, Super Sprite, Spectre, Snarler/Screamer)?  But changing indices of existing TLs causes trouble, so we need to first migrate to storing the puRequired name rather than the TL number in the DesignLibrary.  (Alternatively, an x-class for pure-peroxide engines is also a possibility, though doesn't cover all engines we care about.  Or maybe x-class is pressure-fed?  But Spectre is a pump-fed, throttleable, HTP/kero engine and might be interesting for landers!)  Also, the techlevel needs to store configName (rather than ModuleSPEngine generating it) for consistent testf/lite names (existing du etc.).
